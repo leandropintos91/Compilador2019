@@ -1,0 +1,1 @@
+WHILE variable IN listaexpresiones DO sentencias ENDWHILE
