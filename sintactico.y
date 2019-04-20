@@ -12,6 +12,8 @@ char *yytext;
 int yylex();
 int yyerror();
 
+void mostrarError(char *);
+
 %}
 
 %union {
@@ -31,6 +33,17 @@ LISTAEXPRESIONES
 SENTENCIAS 
 DO
 ID
+OPERACION_SUMA
+OPERACION_RESTA
+OPERACION_MULTIPLICACION
+OPERACION_DIVISION
+ENTERO
+REAL
+PARENTESIS_ABIERTO
+PARENTESIS_CERRADO
+COMA
+
+
 %%
 programa : while {printf("Compilación OK\n");};
 
@@ -39,9 +52,48 @@ while: WHILE {printf("Reconocí WHILE\n");}
         IN {printf("Reconocí IN\n");} 
         lista_expresiones DO sentencias ENDWHILE;
 
-lista_expresiones: LISTAEXPRESIONES;
-
 sentencias: SENTENCIAS;
+
+lista_expresiones:  lista_expresiones COMA expresion
+  | expresion;
+
+expresion:
+  termino
+  |expresion OPERACION_RESTA termino
+    {
+      printf("Resta OK\n");
+    }
+  |expresion OPERACION_SUMA termino
+    {
+      printf("Suma OK\n");
+    };
+
+termino: 
+  factor
+  |termino OPERACION_MULTIPLICACION factor  
+    {
+      printf("Multiplicación OK\n");
+    }
+  |termino OPERACION_DIVISION factor  
+    {
+    - printf("División OK\n");
+    };
+
+factor: 
+  ID
+    {
+      printf(" ID %s \n",$<str_val>$);
+      printf("ID en FACTOR es: %s \n", $<str_val>$);
+    }
+  | ENTERO 
+    {
+      printf("ENTERO en FACTOR es: %d \n", $<int_val>$);
+    }
+  | REAL 
+    {
+      printf("REAL en FACTOR es: %f \n", $<float_val>$);
+    }
+  |PARENTESIS_ABIERTO expresion PARENTESIS_CERRADO;
 
 %%
 int main(int argc,char *argv[])
