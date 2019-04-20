@@ -45,12 +45,12 @@ COMA
 
 
 %%
-programa : while {printf("Compilación OK\n");};
+programa : ciclo_especial {printf("Compilación OK\n");};
 
-while: WHILE {printf("Reconocí WHILE\n");} 
+ciclo_especial: WHILE {printf("WHILE OK\n");} 
         ID {printf("Reconocí ID\n");} 
         IN {printf("Reconocí IN\n");} 
-        lista_expresiones DO sentencias ENDWHILE;
+        lista_expresiones DO sentencias ENDWHILE {printf("Ciclo Especial OK\n");};
 
 sentencias: SENTENCIAS;
 
