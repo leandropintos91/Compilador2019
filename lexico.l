@@ -13,6 +13,7 @@
 int validarLongitudId();
 int validarLongitudReal();
 int validarLongitudEntero();
+int validarLongitudCadena();
 
 FILE  *yyin;
 char auxS[100];
@@ -29,25 +30,46 @@ COMENTARIOS_ANIDADOS	\*\/([^"\/\-"|"\-\/"]|\n)*{COMENTARIOS}*([^"\/\-"|"\-\/"]|\
 ID						{LETRA}({LETRA}|{DIGITO}|_)*
 REAL					(\-)?({DIGITO}*"."{DIGITO}+|{DIGITO}+".")
 ENTERO					(\-)?{DIGITO}+
+CADENA					\"[^"\n]*\"
 
 %%
 
-{COMENTARIOS}			{return COMENTARIOS;}
-{COMENTARIOS_ANIDADOS}	{return COMENTARIOS_ANIDADOS;}
+{COMENTARIOS}				{return COMENTARIOS;}
+{COMENTARIOS_ANIDADOS}		{return COMENTARIOS_ANIDADOS;}
 
-"WHILE"   				{return WHILE;}
-"ENDWHILE"				{return ENDWHILE;}
-"IN"					{return IN;}
-"sentencias"			{return SENTENCIAS;}
-"listaexpresiones"		{return LISTAEXPRESIONES;}
-"DO"					{return DO;}
-"+"						{return OPERACION_SUMA;}
-"-"						{return OPERACION_RESTA;}
-"*"						{return OPERACION_MULTIPLICACION;}
-"/"						{return OPERACION_DIVISION;}
-"\("					{return PARENTESIS_ABIERTO;}
-"\)"					{return PARENTESIS_CERRADO;}
-","						{return COMA;}
+"WHILE"   					{return WHILE;}
+"ENDWHILE"					{return ENDWHILE;}
+"IN"						{return IN;}
+"DO"						{return DO;}
+"+"							{return OPERACION_SUMA;}
+"-"							{return OPERACION_RESTA;}
+"*"							{return OPERACION_MULTIPLICACION;}
+"/"							{return OPERACION_DIVISION;}
+"\("						{return PARENTESIS_ABIERTO;}
+"\)"						{return PARENTESIS_CERRADO;}
+","							{return COMA;}
+":="						{return OPERADOR_ASIGNACION;}
+"GET"						{return OPERADOR_ENTRADA;}
+"DISPLAY"					{return OPERADOR_SALIDA;}
+"OPERADOR_IF"				{return OPERADOR_IF;}
+"THEN"						{return THEN;}
+"ENDIF"						{return ENDIF;}
+"AND"						{return OPERADOR_AND;}
+"OR"						{return OPERADOR_OR;}
+"NOT"						{return OPERADOR_NOT;}
+">"							{return OPERADOR_MAYOR_A;}
+"<"							{return OPERADOR_MENOR_A;}
+">="						{return OPERADOR_MAYOR_O_IGUAL_A;}
+"<="						{return OPERADOR_MENOR_O_IGUAL_A;}
+"="							{return OPERADOR_IGUAL_A;}
+"!="						{return OPERADOR_DISTINTO_A;}
+"DEFVAR"					{return DEFVAR;}
+"ENDDEF"					{return ENDDEF;}
+";"							{return PUNTO_Y_COMA;}
+":"							{return DOS_PUNTOS;}
+"FLOAT"						{return TIPO_REAL;}
+"STRING"					{return TIPO_CADENA;}
+"INT"						{return TIPO_ENTERO;}
 
 {ID}					{	sprintf(auxS,"%s", yytext);
 							if(validarLongitudId() == 0) 
@@ -66,6 +88,13 @@ ENTERO					(\-)?{DIGITO}+
 				 				mostrarError(yytext);
 				 			sscanf(yytext,"%lf",&(yylval.float_val));
 							return REAL;
+						}
+
+{CADENA} 				{	if(validarLongitudCadena() == 0)
+				 				mostrarError(yytext);
+							sprintf(auxS,"%s", yytext);
+							yylval.str_val=auxS; 
+							return CADENA;
 						}
 
 "\n"      		
@@ -94,6 +123,12 @@ int validarLongitudEntero(){
 	int entero;
 	sscanf(yytext,"%d",&entero);
 	if(entero >= -LIMITE_ENTERO && entero <= LIMITE_ENTERO-1)
+		return 1;
+	return 0;
+}
+
+int validarLongitudCadena(){
+	if(strlen(yytext) <= LIMITE_CADENA) 
 		return 1;
 	return 0;
 }
