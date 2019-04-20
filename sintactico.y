@@ -26,11 +26,9 @@ char *str_val;
 
 %token COMENTARIOS 
 COMENTARIOS_ANIDADOS 
-WHILE ENDWHILE 
+WHILE 
+ENDWHILE 
 IN 
-VARIABLE 
-LISTAEXPRESIONES 
-SENTENCIAS 
 DO
 ID
 OPERACION_SUMA
@@ -42,20 +40,86 @@ REAL
 PARENTESIS_ABIERTO
 PARENTESIS_CERRADO
 COMA
-
+OPERADOR_ASIGNACION
+CADENA
+OPERADOR_ENTRADA
+OPERADOR_SALIDA
+OPERADOR_IF 
+THEN
+ENDIF
+OPERADOR_AND
+OPERADOR_OR
+OPERADOR_NOT
+OPERADOR_MAYOR_A
+OPERADOR_MENOR_A
+OPERADOR_MAYOR_O_IGUAL_A
+OPERADOR_MENOR_O_IGUAL_A
+OPERADOR_MAYOR
+OPERADOR_IGUAL_A
+OPERADOR_DISTINTO_A
+DEFVAR
+ENDDEF
+DOS_PUNTOS
+PUNTO_Y_COMA
+TIPO_ENTERO
+TIPO_REAL
+TIPO_CADENA
 
 %%
-programa : ciclo_especial {printf("Compilación OK\n");};
+programa : definicion_variables lista_sentencias {printf("Compilación OK\n");};
+
+definicion_variables: DEFVAR lista_definiciones ENDDEF;
+
+lista_definiciones: lista_definiciones definicion | definicion;
+
+definicion: tipo_variable DOS_PUNTOS lista_ids;
+
+lista_ids: lista_ids PUNTO_Y_COMA ID | ID;
+
+tipo_variable: TIPO_ENTERO | TIPO_REAL | TIPO_CADENA;
 
 ciclo_especial: WHILE {printf("WHILE OK\n");} 
         ID {printf("Reconocí ID\n");} 
         IN {printf("Reconocí IN\n");} 
-        lista_expresiones DO sentencias ENDWHILE {printf("Ciclo Especial OK\n");};
+        lista_expresiones {printf("Reconocí lista_expresiones\n");} 
+        DO {printf("Reconocí DO\n");} lista_sentencias ENDWHILE {printf("Ciclo Especial OK\n");};
 
-sentencias: SENTENCIAS;
+lista_sentencias: lista_sentencias sentencia | sentencia;
+
+sentencia: asignacion | expresion | entrada | salida | ciclo_especial | decision | iteracion;
+
+asignacion: ID {printf("ID %s en asignacion\n", $<str_val>$);} OPERADOR_ASIGNACION asignable;
+
+asignable: expresion | CADENA;
 
 lista_expresiones:  lista_expresiones COMA expresion
   | expresion;
+
+decision: OPERADOR_IF evaluable THEN lista_sentencias ENDIF;
+
+evaluable: PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO;
+
+condicion: condicion_simple | condicion_compuesta;
+
+condicion_compuesta: condicion_simple OPERADOR_AND condicion_simple
+  | condicion_simple OPERADOR_OR condicion_simple
+  | OPERADOR_NOT PARENTESIS_ABIERTO condicion_simple PARENTESIS_CERRADO;
+
+condicion_simple: expresion comparador expresion;
+
+comparador: OPERADOR_MAYOR_A
+  | OPERADOR_MENOR_A
+  | OPERADOR_MAYOR_O_IGUAL_A
+  | OPERADOR_MENOR_O_IGUAL_A
+  | OPERADOR_MAYOR
+  | OPERADOR_IGUAL_A
+  | OPERADOR_DISTINTO_A;
+
+iteracion: WHILE evaluable THEN lista_sentencias ENDWHILE;
+
+entrada: OPERADOR_ENTRADA ID;
+
+salida: OPERADOR_SALIDA ID | OPERADOR_SALIDA CADENA;
 
 expresion:
   termino
