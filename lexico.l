@@ -51,7 +51,7 @@ CADENA					\"[^"\n]*\"
 ":="						{return OPERADOR_ASIGNACION;}
 "GET"						{return OPERADOR_ENTRADA;}
 "DISPLAY"					{return OPERADOR_SALIDA;}
-"OPERADOR_IF"				{return OPERADOR_IF;}
+"IF"						{return OPERADOR_IF;}
 "THEN"						{return THEN;}
 "ENDIF"						{return ENDIF;}
 "AND"						{return OPERADOR_AND;}
