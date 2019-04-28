@@ -55,6 +55,7 @@ CADENA					\"[^"\n]*\"
 "DISPLAY"					{return OPERADOR_SALIDA;}
 "IF"						{return OPERADOR_IF;}
 "THEN"						{return THEN;}
+"ELSE"						{return ELSE;}
 "ENDIF"						{return ENDIF;}
 "AND"						{return OPERADOR_AND;}
 "OR"						{return OPERADOR_OR;}

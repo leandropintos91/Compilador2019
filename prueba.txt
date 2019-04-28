@@ -14,6 +14,8 @@ b:=9.
 b:=.9
 cadenita := ""
 b:=-9
+cadena1 := "cadena duplicada"
+cadena1 := "cadena duplicada"
 
 WHILE variable IN id1, sarasa, a+b, 5, 7, a*9 
 DO
@@ -25,6 +27,8 @@ DO
         DISPLAY "texto de prueba"
         GET cadena1
         DISPLAY cadenita
+    ELSE
+    	a:= c * 28
     ENDIF
     a:=(9*8)
 ENDWHILE

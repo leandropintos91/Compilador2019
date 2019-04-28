@@ -70,6 +70,7 @@ OPERADOR_ENTRADA
 OPERADOR_SALIDA
 OPERADOR_IF 
 THEN
+ELSE
 ENDIF
 OPERADOR_AND
 OPERADOR_OR
@@ -149,7 +150,9 @@ cadena: CADENA
 lista_expresiones:  lista_expresiones COMA expresion
   | expresion;
 
-decision: OPERADOR_IF evaluable THEN lista_sentencias ENDIF;
+decision: 
+  OPERADOR_IF evaluable THEN lista_sentencias ENDIF
+  | OPERADOR_IF evaluable THEN lista_sentencias ELSE lista_sentencias ENDIF;
 
 evaluable: PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO;
 
