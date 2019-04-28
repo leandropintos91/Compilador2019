@@ -14,6 +14,7 @@ int validarLongitudId();
 int validarLongitudReal();
 int validarLongitudEntero();
 int validarLongitudCadena();
+void mostrarError();
 
 FILE  *yyin;
 char auxS[100];

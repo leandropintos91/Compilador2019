@@ -6,6 +6,13 @@ ENDDEF
 
 
 b := b + 2
+b:=-9.9
+b:=-9.
+b:=-.9
+b:=9.9
+b:=9.
+b:=.9
+cadenita = ""
 
 WHILE variable IN id1, sarasa, a+b, 5, 7, a*9 
 DO
