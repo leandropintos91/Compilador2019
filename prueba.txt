@@ -13,6 +13,7 @@ b:=9.9
 b:=9.
 b:=.9
 cadenita := ""
+b:=-9
 
 WHILE variable IN id1, sarasa, a+b, 5, 7, a*9 
 DO

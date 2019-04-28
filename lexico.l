@@ -106,6 +106,12 @@ CADENA					\"[^"\n]*\"
 "\t"
 " "
 
+
+.    					{
+							printf("Caracter invalido!");
+							exit(1);
+						}
+
 %%
 
 int validarLongitudId(){
