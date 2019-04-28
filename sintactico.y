@@ -46,7 +46,7 @@ double float_val;
 char *str_val;
 }
 
-%start programa
+%start start_programa
 
 %token COMENTARIOS 
 COMENTARIOS_ANIDADOS 
@@ -90,7 +90,8 @@ TIPO_REAL
 TIPO_CADENA
 
 %%
-programa : definicion_variables lista_sentencias {printf("Compilación OK\n");};
+start_programa : programa {printf("Compilación OK\n");};
+programa : definicion_variables lista_sentencias;
 
 definicion_variables: DEFVAR lista_definiciones ENDDEF;
 

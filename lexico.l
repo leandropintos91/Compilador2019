@@ -14,7 +14,8 @@ int validarLongitudId();
 int validarLongitudReal();
 int validarLongitudEntero();
 int validarLongitudCadena();
-void mostrarError();
+void mostrarError(char*);
+void quitarComillas();
 
 FILE  *yyin;
 char auxS[100];
@@ -94,6 +95,7 @@ CADENA					\"[^"\n]*\"
 {CADENA} 				{	if(validarLongitudCadena() == 0)
 				 				mostrarError(yytext);
 							sprintf(auxS,"%s", yytext);
+							quitarComillas();
 							yylval.str_val=auxS; 
 							return CADENA;
 						}
@@ -129,7 +131,16 @@ int validarLongitudEntero(){
 }
 
 int validarLongitudCadena(){
-	if(strlen(yytext) <= LIMITE_CADENA) 
+	if((strlen(yytext) - 2) <= LIMITE_CADENA) 
 		return 1;
 	return 0;
+}
+
+void quitarComillas() {
+	int i = 0;
+	while(auxS[i+1] != '\"') {
+		auxS[i] = auxS[i+1];
+		i++;
+	}
+	auxS[i] = '\0';
 }
