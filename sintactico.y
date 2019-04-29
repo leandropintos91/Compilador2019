@@ -234,7 +234,7 @@ int main(int argc,char *argv[])
   else
   {
 	    yyparse();
-      if ((archivoTablaDeSimbolos = fopen ("TablaDeSimbolos.txt","w"))== NULL)
+      if ((archivoTablaDeSimbolos = fopen ("ts.txt","w"))== NULL)
       {
         printf("No se puede crear el archivo de la tabla de simbolos");
         exit(1);
