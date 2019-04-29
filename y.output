@@ -1,0 +1,1378 @@
+Terminals unused in grammar
+
+   COMENTARIOS
+   COMENTARIOS_ANIDADOS
+
+
+Gramática
+
+    0 $accept: start_programa $end
+
+    1 start_programa: programa
+
+    2 programa: definicion_variables lista_sentencias
+
+    3 definicion_variables: DEFVAR lista_definiciones ENDDEF
+
+    4 lista_definiciones: lista_definiciones definicion
+    5                   | definicion
+
+    6 definicion: tipo_variable DOS_PUNTOS lista_ids
+
+    7 lista_ids: lista_ids PUNTO_Y_COMA ID
+    8          | ID
+
+    9 tipo_variable: TIPO_ENTERO
+   10              | TIPO_REAL
+   11              | TIPO_CADENA
+
+   12 $@1: /* vacío */
+
+   13 $@2: /* vacío */
+
+   14 $@3: /* vacío */
+
+   15 $@4: /* vacío */
+
+   16 $@5: /* vacío */
+
+   17 ciclo_especial: WHILE $@1 ID $@2 IN $@3 lista_expresiones $@4 DO $@5 lista_sentencias ENDWHILE
+
+   18 lista_sentencias: lista_sentencias sentencia
+   19                 | sentencia
+
+   20 sentencia: asignacion
+   21          | expresion
+   22          | entrada
+   23          | salida
+   24          | ciclo_especial
+   25          | decision
+   26          | iteracion
+
+   27 $@6: /* vacío */
+
+   28 asignacion: ID $@6 OPERADOR_ASIGNACION asignable
+
+   29 asignable: expresion
+   30          | cadena
+
+   31 cadena: CADENA
+
+   32 lista_expresiones: lista_expresiones COMA expresion
+   33                  | expresion
+
+   34 decision: OPERADOR_IF evaluable THEN lista_sentencias ENDIF
+   35         | OPERADOR_IF evaluable THEN lista_sentencias ELSE lista_sentencias ENDIF
+
+   36 evaluable: PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO
+
+   37 condicion: condicion_simple
+   38          | condicion_compuesta
+
+   39 condicion_compuesta: condicion_simple OPERADOR_AND condicion_simple
+   40                    | condicion_simple OPERADOR_OR condicion_simple
+   41                    | OPERADOR_NOT PARENTESIS_ABIERTO condicion_simple PARENTESIS_CERRADO
+
+   42 condicion_simple: expresion comparador expresion
+
+   43 comparador: OPERADOR_MAYOR_A
+   44           | OPERADOR_MENOR_A
+   45           | OPERADOR_MAYOR_O_IGUAL_A
+   46           | OPERADOR_MENOR_O_IGUAL_A
+   47           | OPERADOR_MAYOR
+   48           | OPERADOR_IGUAL_A
+   49           | OPERADOR_DISTINTO_A
+
+   50 iteracion: WHILE evaluable THEN lista_sentencias ENDWHILE
+
+   51 entrada: OPERADOR_ENTRADA ID
+
+   52 salida: OPERADOR_SALIDA ID
+   53       | OPERADOR_SALIDA cadena
+
+   54 expresion: termino
+   55          | expresion OPERACION_RESTA termino
+   56          | expresion OPERACION_SUMA termino
+
+   57 termino: factor
+   58        | termino OPERACION_MULTIPLICACION factor
+   59        | termino OPERACION_DIVISION factor
+
+   60 factor: ID
+   61       | ENTERO
+   62       | REAL
+   63       | PARENTESIS_ABIERTO expresion PARENTESIS_CERRADO
+
+
+Terminales con las reglas donde aparecen
+
+$end (0) 0
+error (256)
+COMENTARIOS (258)
+COMENTARIOS_ANIDADOS (259)
+WHILE (260) 17 50
+ENDWHILE (261) 17 50
+IN (262) 17
+DO (263) 17
+ID (264) 7 8 17 28 51 52 60
+OPERACION_SUMA (265) 56
+OPERACION_RESTA (266) 55
+OPERACION_MULTIPLICACION (267) 58
+OPERACION_DIVISION (268) 59
+ENTERO (269) 61
+REAL (270) 62
+PARENTESIS_ABIERTO (271) 36 41 63
+PARENTESIS_CERRADO (272) 36 41 63
+COMA (273) 32
+OPERADOR_ASIGNACION (274) 28
+CADENA (275) 31
+OPERADOR_ENTRADA (276) 51
+OPERADOR_SALIDA (277) 52 53
+OPERADOR_IF (278) 34 35
+THEN (279) 34 35 50
+ELSE (280) 35
+ENDIF (281) 34 35
+OPERADOR_AND (282) 39
+OPERADOR_OR (283) 40
+OPERADOR_NOT (284) 41
+OPERADOR_MAYOR_A (285) 43
+OPERADOR_MENOR_A (286) 44
+OPERADOR_MAYOR_O_IGUAL_A (287) 45
+OPERADOR_MENOR_O_IGUAL_A (288) 46
+OPERADOR_MAYOR (289) 47
+OPERADOR_IGUAL_A (290) 48
+OPERADOR_DISTINTO_A (291) 49
+DEFVAR (292) 3
+ENDDEF (293) 3
+DOS_PUNTOS (294) 6
+PUNTO_Y_COMA (295) 7
+TIPO_ENTERO (296) 9
+TIPO_REAL (297) 10
+TIPO_CADENA (298) 11
+
+
+No terminales con las reglas donde aparecen
+
+$accept (44)
+    en la izquierda: 0
+start_programa (45)
+    en la izquierda: 1, en la derecha: 0
+programa (46)
+    en la izquierda: 2, en la derecha: 1
+definicion_variables (47)
+    en la izquierda: 3, en la derecha: 2
+lista_definiciones (48)
+    en la izquierda: 4 5, en la derecha: 3 4
+definicion (49)
+    en la izquierda: 6, en la derecha: 4 5
+lista_ids (50)
+    en la izquierda: 7 8, en la derecha: 6 7
+tipo_variable (51)
+    en la izquierda: 9 10 11, en la derecha: 6
+ciclo_especial (52)
+    en la izquierda: 17, en la derecha: 24
+$@1 (53)
+    en la izquierda: 12, en la derecha: 17
+$@2 (54)
+    en la izquierda: 13, en la derecha: 17
+$@3 (55)
+    en la izquierda: 14, en la derecha: 17
+$@4 (56)
+    en la izquierda: 15, en la derecha: 17
+$@5 (57)
+    en la izquierda: 16, en la derecha: 17
+lista_sentencias (58)
+    en la izquierda: 18 19, en la derecha: 2 17 18 34 35 50
+sentencia (59)
+    en la izquierda: 20 21 22 23 24 25 26, en la derecha: 18 19
+asignacion (60)
+    en la izquierda: 28, en la derecha: 20
+$@6 (61)
+    en la izquierda: 27, en la derecha: 28
+asignable (62)
+    en la izquierda: 29 30, en la derecha: 28
+cadena (63)
+    en la izquierda: 31, en la derecha: 30 53
+lista_expresiones (64)
+    en la izquierda: 32 33, en la derecha: 17 32
+decision (65)
+    en la izquierda: 34 35, en la derecha: 25
+evaluable (66)
+    en la izquierda: 36, en la derecha: 34 35 50
+condicion (67)
+    en la izquierda: 37 38, en la derecha: 36
+condicion_compuesta (68)
+    en la izquierda: 39 40 41, en la derecha: 38
+condicion_simple (69)
+    en la izquierda: 42, en la derecha: 37 39 40 41
+comparador (70)
+    en la izquierda: 43 44 45 46 47 48 49, en la derecha: 42
+iteracion (71)
+    en la izquierda: 50, en la derecha: 26
+entrada (72)
+    en la izquierda: 51, en la derecha: 22
+salida (73)
+    en la izquierda: 52 53, en la derecha: 23
+expresion (74)
+    en la izquierda: 54 55 56, en la derecha: 21 29 32 33 42 55 56
+    63
+termino (75)
+    en la izquierda: 57 58 59, en la derecha: 54 55 56 58 59
+factor (76)
+    en la izquierda: 60 61 62 63, en la derecha: 57 58 59
+
+
+estado 0
+
+    0 $accept: . start_programa $end
+
+    DEFVAR  desplazar e ir al estado 1
+
+    start_programa        ir al estado 2
+    programa              ir al estado 3
+    definicion_variables  ir al estado 4
+
+
+estado 1
+
+    3 definicion_variables: DEFVAR . lista_definiciones ENDDEF
+
+    TIPO_ENTERO  desplazar e ir al estado 5
+    TIPO_REAL    desplazar e ir al estado 6
+    TIPO_CADENA  desplazar e ir al estado 7
+
+    lista_definiciones  ir al estado 8
+    definicion          ir al estado 9
+    tipo_variable       ir al estado 10
+
+
+estado 2
+
+    0 $accept: start_programa . $end
+
+    $end  desplazar e ir al estado 11
+
+
+estado 3
+
+    1 start_programa: programa .
+
+    $default  reduce usando la regla 1 (start_programa)
+
+
+estado 4
+
+    2 programa: definicion_variables . lista_sentencias
+
+    WHILE               desplazar e ir al estado 12
+    ID                  desplazar e ir al estado 13
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    OPERADOR_ENTRADA    desplazar e ir al estado 17
+    OPERADOR_SALIDA     desplazar e ir al estado 18
+    OPERADOR_IF         desplazar e ir al estado 19
+
+    ciclo_especial    ir al estado 20
+    lista_sentencias  ir al estado 21
+    sentencia         ir al estado 22
+    asignacion        ir al estado 23
+    decision          ir al estado 24
+    iteracion         ir al estado 25
+    entrada           ir al estado 26
+    salida            ir al estado 27
+    expresion         ir al estado 28
+    termino           ir al estado 29
+    factor            ir al estado 30
+
+
+estado 5
+
+    9 tipo_variable: TIPO_ENTERO .
+
+    $default  reduce usando la regla 9 (tipo_variable)
+
+
+estado 6
+
+   10 tipo_variable: TIPO_REAL .
+
+    $default  reduce usando la regla 10 (tipo_variable)
+
+
+estado 7
+
+   11 tipo_variable: TIPO_CADENA .
+
+    $default  reduce usando la regla 11 (tipo_variable)
+
+
+estado 8
+
+    3 definicion_variables: DEFVAR lista_definiciones . ENDDEF
+    4 lista_definiciones: lista_definiciones . definicion
+
+    ENDDEF       desplazar e ir al estado 31
+    TIPO_ENTERO  desplazar e ir al estado 5
+    TIPO_REAL    desplazar e ir al estado 6
+    TIPO_CADENA  desplazar e ir al estado 7
+
+    definicion     ir al estado 32
+    tipo_variable  ir al estado 10
+
+
+estado 9
+
+    5 lista_definiciones: definicion .
+
+    $default  reduce usando la regla 5 (lista_definiciones)
+
+
+estado 10
+
+    6 definicion: tipo_variable . DOS_PUNTOS lista_ids
+
+    DOS_PUNTOS  desplazar e ir al estado 33
+
+
+estado 11
+
+    0 $accept: start_programa $end .
+
+    $default  aceptar
+
+
+estado 12
+
+   17 ciclo_especial: WHILE . $@1 ID $@2 IN $@3 lista_expresiones $@4 DO $@5 lista_sentencias ENDWHILE
+   50 iteracion: WHILE . evaluable THEN lista_sentencias ENDWHILE
+
+    PARENTESIS_ABIERTO  desplazar e ir al estado 34
+
+    $default  reduce usando la regla 12 ($@1)
+
+    $@1        ir al estado 35
+    evaluable  ir al estado 36
+
+
+estado 13
+
+   28 asignacion: ID . $@6 OPERADOR_ASIGNACION asignable
+   60 factor: ID .
+
+    OPERADOR_ASIGNACION  reduce usando la regla 27 ($@6)
+    $default             reduce usando la regla 60 (factor)
+
+    $@6  ir al estado 37
+
+
+estado 14
+
+   61 factor: ENTERO .
+
+    $default  reduce usando la regla 61 (factor)
+
+
+estado 15
+
+   62 factor: REAL .
+
+    $default  reduce usando la regla 62 (factor)
+
+
+estado 16
+
+   63 factor: PARENTESIS_ABIERTO . expresion PARENTESIS_CERRADO
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+
+    expresion  ir al estado 39
+    termino    ir al estado 29
+    factor     ir al estado 30
+
+
+estado 17
+
+   51 entrada: OPERADOR_ENTRADA . ID
+
+    ID  desplazar e ir al estado 40
+
+
+estado 18
+
+   52 salida: OPERADOR_SALIDA . ID
+   53       | OPERADOR_SALIDA . cadena
+
+    ID      desplazar e ir al estado 41
+    CADENA  desplazar e ir al estado 42
+
+    cadena  ir al estado 43
+
+
+estado 19
+
+   34 decision: OPERADOR_IF . evaluable THEN lista_sentencias ENDIF
+   35         | OPERADOR_IF . evaluable THEN lista_sentencias ELSE lista_sentencias ENDIF
+
+    PARENTESIS_ABIERTO  desplazar e ir al estado 34
+
+    evaluable  ir al estado 44
+
+
+estado 20
+
+   24 sentencia: ciclo_especial .
+
+    $default  reduce usando la regla 24 (sentencia)
+
+
+estado 21
+
+    2 programa: definicion_variables lista_sentencias .
+   18 lista_sentencias: lista_sentencias . sentencia
+
+    WHILE               desplazar e ir al estado 12
+    ID                  desplazar e ir al estado 13
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    OPERADOR_ENTRADA    desplazar e ir al estado 17
+    OPERADOR_SALIDA     desplazar e ir al estado 18
+    OPERADOR_IF         desplazar e ir al estado 19
+
+    $default  reduce usando la regla 2 (programa)
+
+    ciclo_especial  ir al estado 20
+    sentencia       ir al estado 45
+    asignacion      ir al estado 23
+    decision        ir al estado 24
+    iteracion       ir al estado 25
+    entrada         ir al estado 26
+    salida          ir al estado 27
+    expresion       ir al estado 28
+    termino         ir al estado 29
+    factor          ir al estado 30
+
+
+estado 22
+
+   19 lista_sentencias: sentencia .
+
+    $default  reduce usando la regla 19 (lista_sentencias)
+
+
+estado 23
+
+   20 sentencia: asignacion .
+
+    $default  reduce usando la regla 20 (sentencia)
+
+
+estado 24
+
+   25 sentencia: decision .
+
+    $default  reduce usando la regla 25 (sentencia)
+
+
+estado 25
+
+   26 sentencia: iteracion .
+
+    $default  reduce usando la regla 26 (sentencia)
+
+
+estado 26
+
+   22 sentencia: entrada .
+
+    $default  reduce usando la regla 22 (sentencia)
+
+
+estado 27
+
+   23 sentencia: salida .
+
+    $default  reduce usando la regla 23 (sentencia)
+
+
+estado 28
+
+   21 sentencia: expresion .
+   55 expresion: expresion . OPERACION_RESTA termino
+   56          | expresion . OPERACION_SUMA termino
+
+    OPERACION_SUMA   desplazar e ir al estado 46
+    OPERACION_RESTA  desplazar e ir al estado 47
+
+    $default  reduce usando la regla 21 (sentencia)
+
+
+estado 29
+
+   54 expresion: termino .
+   58 termino: termino . OPERACION_MULTIPLICACION factor
+   59        | termino . OPERACION_DIVISION factor
+
+    OPERACION_MULTIPLICACION  desplazar e ir al estado 48
+    OPERACION_DIVISION        desplazar e ir al estado 49
+
+    $default  reduce usando la regla 54 (expresion)
+
+
+estado 30
+
+   57 termino: factor .
+
+    $default  reduce usando la regla 57 (termino)
+
+
+estado 31
+
+    3 definicion_variables: DEFVAR lista_definiciones ENDDEF .
+
+    $default  reduce usando la regla 3 (definicion_variables)
+
+
+estado 32
+
+    4 lista_definiciones: lista_definiciones definicion .
+
+    $default  reduce usando la regla 4 (lista_definiciones)
+
+
+estado 33
+
+    6 definicion: tipo_variable DOS_PUNTOS . lista_ids
+
+    ID  desplazar e ir al estado 50
+
+    lista_ids  ir al estado 51
+
+
+estado 34
+
+   36 evaluable: PARENTESIS_ABIERTO . condicion PARENTESIS_CERRADO
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    OPERADOR_NOT        desplazar e ir al estado 52
+
+    condicion            ir al estado 53
+    condicion_compuesta  ir al estado 54
+    condicion_simple     ir al estado 55
+    expresion            ir al estado 56
+    termino              ir al estado 29
+    factor               ir al estado 30
+
+
+estado 35
+
+   17 ciclo_especial: WHILE $@1 . ID $@2 IN $@3 lista_expresiones $@4 DO $@5 lista_sentencias ENDWHILE
+
+    ID  desplazar e ir al estado 57
+
+
+estado 36
+
+   50 iteracion: WHILE evaluable . THEN lista_sentencias ENDWHILE
+
+    THEN  desplazar e ir al estado 58
+
+
+estado 37
+
+   28 asignacion: ID $@6 . OPERADOR_ASIGNACION asignable
+
+    OPERADOR_ASIGNACION  desplazar e ir al estado 59
+
+
+estado 38
+
+   60 factor: ID .
+
+    $default  reduce usando la regla 60 (factor)
+
+
+estado 39
+
+   55 expresion: expresion . OPERACION_RESTA termino
+   56          | expresion . OPERACION_SUMA termino
+   63 factor: PARENTESIS_ABIERTO expresion . PARENTESIS_CERRADO
+
+    OPERACION_SUMA      desplazar e ir al estado 46
+    OPERACION_RESTA     desplazar e ir al estado 47
+    PARENTESIS_CERRADO  desplazar e ir al estado 60
+
+
+estado 40
+
+   51 entrada: OPERADOR_ENTRADA ID .
+
+    $default  reduce usando la regla 51 (entrada)
+
+
+estado 41
+
+   52 salida: OPERADOR_SALIDA ID .
+
+    $default  reduce usando la regla 52 (salida)
+
+
+estado 42
+
+   31 cadena: CADENA .
+
+    $default  reduce usando la regla 31 (cadena)
+
+
+estado 43
+
+   53 salida: OPERADOR_SALIDA cadena .
+
+    $default  reduce usando la regla 53 (salida)
+
+
+estado 44
+
+   34 decision: OPERADOR_IF evaluable . THEN lista_sentencias ENDIF
+   35         | OPERADOR_IF evaluable . THEN lista_sentencias ELSE lista_sentencias ENDIF
+
+    THEN  desplazar e ir al estado 61
+
+
+estado 45
+
+   18 lista_sentencias: lista_sentencias sentencia .
+
+    $default  reduce usando la regla 18 (lista_sentencias)
+
+
+estado 46
+
+   56 expresion: expresion OPERACION_SUMA . termino
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+
+    termino  ir al estado 62
+    factor   ir al estado 30
+
+
+estado 47
+
+   55 expresion: expresion OPERACION_RESTA . termino
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+
+    termino  ir al estado 63
+    factor   ir al estado 30
+
+
+estado 48
+
+   58 termino: termino OPERACION_MULTIPLICACION . factor
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+
+    factor  ir al estado 64
+
+
+estado 49
+
+   59 termino: termino OPERACION_DIVISION . factor
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+
+    factor  ir al estado 65
+
+
+estado 50
+
+    8 lista_ids: ID .
+
+    $default  reduce usando la regla 8 (lista_ids)
+
+
+estado 51
+
+    6 definicion: tipo_variable DOS_PUNTOS lista_ids .
+    7 lista_ids: lista_ids . PUNTO_Y_COMA ID
+
+    PUNTO_Y_COMA  desplazar e ir al estado 66
+
+    $default  reduce usando la regla 6 (definicion)
+
+
+estado 52
+
+   41 condicion_compuesta: OPERADOR_NOT . PARENTESIS_ABIERTO condicion_simple PARENTESIS_CERRADO
+
+    PARENTESIS_ABIERTO  desplazar e ir al estado 67
+
+
+estado 53
+
+   36 evaluable: PARENTESIS_ABIERTO condicion . PARENTESIS_CERRADO
+
+    PARENTESIS_CERRADO  desplazar e ir al estado 68
+
+
+estado 54
+
+   38 condicion: condicion_compuesta .
+
+    $default  reduce usando la regla 38 (condicion)
+
+
+estado 55
+
+   37 condicion: condicion_simple .
+   39 condicion_compuesta: condicion_simple . OPERADOR_AND condicion_simple
+   40                    | condicion_simple . OPERADOR_OR condicion_simple
+
+    OPERADOR_AND  desplazar e ir al estado 69
+    OPERADOR_OR   desplazar e ir al estado 70
+
+    $default  reduce usando la regla 37 (condicion)
+
+
+estado 56
+
+   42 condicion_simple: expresion . comparador expresion
+   55 expresion: expresion . OPERACION_RESTA termino
+   56          | expresion . OPERACION_SUMA termino
+
+    OPERACION_SUMA            desplazar e ir al estado 46
+    OPERACION_RESTA           desplazar e ir al estado 47
+    OPERADOR_MAYOR_A          desplazar e ir al estado 71
+    OPERADOR_MENOR_A          desplazar e ir al estado 72
+    OPERADOR_MAYOR_O_IGUAL_A  desplazar e ir al estado 73
+    OPERADOR_MENOR_O_IGUAL_A  desplazar e ir al estado 74
+    OPERADOR_MAYOR            desplazar e ir al estado 75
+    OPERADOR_IGUAL_A          desplazar e ir al estado 76
+    OPERADOR_DISTINTO_A       desplazar e ir al estado 77
+
+    comparador  ir al estado 78
+
+
+estado 57
+
+   17 ciclo_especial: WHILE $@1 ID . $@2 IN $@3 lista_expresiones $@4 DO $@5 lista_sentencias ENDWHILE
+
+    $default  reduce usando la regla 13 ($@2)
+
+    $@2  ir al estado 79
+
+
+estado 58
+
+   50 iteracion: WHILE evaluable THEN . lista_sentencias ENDWHILE
+
+    WHILE               desplazar e ir al estado 12
+    ID                  desplazar e ir al estado 13
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    OPERADOR_ENTRADA    desplazar e ir al estado 17
+    OPERADOR_SALIDA     desplazar e ir al estado 18
+    OPERADOR_IF         desplazar e ir al estado 19
+
+    ciclo_especial    ir al estado 20
+    lista_sentencias  ir al estado 80
+    sentencia         ir al estado 22
+    asignacion        ir al estado 23
+    decision          ir al estado 24
+    iteracion         ir al estado 25
+    entrada           ir al estado 26
+    salida            ir al estado 27
+    expresion         ir al estado 28
+    termino           ir al estado 29
+    factor            ir al estado 30
+
+
+estado 59
+
+   28 asignacion: ID $@6 OPERADOR_ASIGNACION . asignable
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    CADENA              desplazar e ir al estado 42
+
+    asignable  ir al estado 81
+    cadena     ir al estado 82
+    expresion  ir al estado 83
+    termino    ir al estado 29
+    factor     ir al estado 30
+
+
+estado 60
+
+   63 factor: PARENTESIS_ABIERTO expresion PARENTESIS_CERRADO .
+
+    $default  reduce usando la regla 63 (factor)
+
+
+estado 61
+
+   34 decision: OPERADOR_IF evaluable THEN . lista_sentencias ENDIF
+   35         | OPERADOR_IF evaluable THEN . lista_sentencias ELSE lista_sentencias ENDIF
+
+    WHILE               desplazar e ir al estado 12
+    ID                  desplazar e ir al estado 13
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    OPERADOR_ENTRADA    desplazar e ir al estado 17
+    OPERADOR_SALIDA     desplazar e ir al estado 18
+    OPERADOR_IF         desplazar e ir al estado 19
+
+    ciclo_especial    ir al estado 20
+    lista_sentencias  ir al estado 84
+    sentencia         ir al estado 22
+    asignacion        ir al estado 23
+    decision          ir al estado 24
+    iteracion         ir al estado 25
+    entrada           ir al estado 26
+    salida            ir al estado 27
+    expresion         ir al estado 28
+    termino           ir al estado 29
+    factor            ir al estado 30
+
+
+estado 62
+
+   56 expresion: expresion OPERACION_SUMA termino .
+   58 termino: termino . OPERACION_MULTIPLICACION factor
+   59        | termino . OPERACION_DIVISION factor
+
+    OPERACION_MULTIPLICACION  desplazar e ir al estado 48
+    OPERACION_DIVISION        desplazar e ir al estado 49
+
+    $default  reduce usando la regla 56 (expresion)
+
+
+estado 63
+
+   55 expresion: expresion OPERACION_RESTA termino .
+   58 termino: termino . OPERACION_MULTIPLICACION factor
+   59        | termino . OPERACION_DIVISION factor
+
+    OPERACION_MULTIPLICACION  desplazar e ir al estado 48
+    OPERACION_DIVISION        desplazar e ir al estado 49
+
+    $default  reduce usando la regla 55 (expresion)
+
+
+estado 64
+
+   58 termino: termino OPERACION_MULTIPLICACION factor .
+
+    $default  reduce usando la regla 58 (termino)
+
+
+estado 65
+
+   59 termino: termino OPERACION_DIVISION factor .
+
+    $default  reduce usando la regla 59 (termino)
+
+
+estado 66
+
+    7 lista_ids: lista_ids PUNTO_Y_COMA . ID
+
+    ID  desplazar e ir al estado 85
+
+
+estado 67
+
+   41 condicion_compuesta: OPERADOR_NOT PARENTESIS_ABIERTO . condicion_simple PARENTESIS_CERRADO
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+
+    condicion_simple  ir al estado 86
+    expresion         ir al estado 56
+    termino           ir al estado 29
+    factor            ir al estado 30
+
+
+estado 68
+
+   36 evaluable: PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO .
+
+    $default  reduce usando la regla 36 (evaluable)
+
+
+estado 69
+
+   39 condicion_compuesta: condicion_simple OPERADOR_AND . condicion_simple
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+
+    condicion_simple  ir al estado 87
+    expresion         ir al estado 56
+    termino           ir al estado 29
+    factor            ir al estado 30
+
+
+estado 70
+
+   40 condicion_compuesta: condicion_simple OPERADOR_OR . condicion_simple
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+
+    condicion_simple  ir al estado 88
+    expresion         ir al estado 56
+    termino           ir al estado 29
+    factor            ir al estado 30
+
+
+estado 71
+
+   43 comparador: OPERADOR_MAYOR_A .
+
+    $default  reduce usando la regla 43 (comparador)
+
+
+estado 72
+
+   44 comparador: OPERADOR_MENOR_A .
+
+    $default  reduce usando la regla 44 (comparador)
+
+
+estado 73
+
+   45 comparador: OPERADOR_MAYOR_O_IGUAL_A .
+
+    $default  reduce usando la regla 45 (comparador)
+
+
+estado 74
+
+   46 comparador: OPERADOR_MENOR_O_IGUAL_A .
+
+    $default  reduce usando la regla 46 (comparador)
+
+
+estado 75
+
+   47 comparador: OPERADOR_MAYOR .
+
+    $default  reduce usando la regla 47 (comparador)
+
+
+estado 76
+
+   48 comparador: OPERADOR_IGUAL_A .
+
+    $default  reduce usando la regla 48 (comparador)
+
+
+estado 77
+
+   49 comparador: OPERADOR_DISTINTO_A .
+
+    $default  reduce usando la regla 49 (comparador)
+
+
+estado 78
+
+   42 condicion_simple: expresion comparador . expresion
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+
+    expresion  ir al estado 89
+    termino    ir al estado 29
+    factor     ir al estado 30
+
+
+estado 79
+
+   17 ciclo_especial: WHILE $@1 ID $@2 . IN $@3 lista_expresiones $@4 DO $@5 lista_sentencias ENDWHILE
+
+    IN  desplazar e ir al estado 90
+
+
+estado 80
+
+   18 lista_sentencias: lista_sentencias . sentencia
+   50 iteracion: WHILE evaluable THEN lista_sentencias . ENDWHILE
+
+    WHILE               desplazar e ir al estado 12
+    ENDWHILE            desplazar e ir al estado 91
+    ID                  desplazar e ir al estado 13
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    OPERADOR_ENTRADA    desplazar e ir al estado 17
+    OPERADOR_SALIDA     desplazar e ir al estado 18
+    OPERADOR_IF         desplazar e ir al estado 19
+
+    ciclo_especial  ir al estado 20
+    sentencia       ir al estado 45
+    asignacion      ir al estado 23
+    decision        ir al estado 24
+    iteracion       ir al estado 25
+    entrada         ir al estado 26
+    salida          ir al estado 27
+    expresion       ir al estado 28
+    termino         ir al estado 29
+    factor          ir al estado 30
+
+
+estado 81
+
+   28 asignacion: ID $@6 OPERADOR_ASIGNACION asignable .
+
+    $default  reduce usando la regla 28 (asignacion)
+
+
+estado 82
+
+   30 asignable: cadena .
+
+    $default  reduce usando la regla 30 (asignable)
+
+
+estado 83
+
+   29 asignable: expresion .
+   55 expresion: expresion . OPERACION_RESTA termino
+   56          | expresion . OPERACION_SUMA termino
+
+    OPERACION_SUMA   desplazar e ir al estado 46
+    OPERACION_RESTA  desplazar e ir al estado 47
+
+    $default  reduce usando la regla 29 (asignable)
+
+
+estado 84
+
+   18 lista_sentencias: lista_sentencias . sentencia
+   34 decision: OPERADOR_IF evaluable THEN lista_sentencias . ENDIF
+   35         | OPERADOR_IF evaluable THEN lista_sentencias . ELSE lista_sentencias ENDIF
+
+    WHILE               desplazar e ir al estado 12
+    ID                  desplazar e ir al estado 13
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    OPERADOR_ENTRADA    desplazar e ir al estado 17
+    OPERADOR_SALIDA     desplazar e ir al estado 18
+    OPERADOR_IF         desplazar e ir al estado 19
+    ELSE                desplazar e ir al estado 92
+    ENDIF               desplazar e ir al estado 93
+
+    ciclo_especial  ir al estado 20
+    sentencia       ir al estado 45
+    asignacion      ir al estado 23
+    decision        ir al estado 24
+    iteracion       ir al estado 25
+    entrada         ir al estado 26
+    salida          ir al estado 27
+    expresion       ir al estado 28
+    termino         ir al estado 29
+    factor          ir al estado 30
+
+
+estado 85
+
+    7 lista_ids: lista_ids PUNTO_Y_COMA ID .
+
+    $default  reduce usando la regla 7 (lista_ids)
+
+
+estado 86
+
+   41 condicion_compuesta: OPERADOR_NOT PARENTESIS_ABIERTO condicion_simple . PARENTESIS_CERRADO
+
+    PARENTESIS_CERRADO  desplazar e ir al estado 94
+
+
+estado 87
+
+   39 condicion_compuesta: condicion_simple OPERADOR_AND condicion_simple .
+
+    $default  reduce usando la regla 39 (condicion_compuesta)
+
+
+estado 88
+
+   40 condicion_compuesta: condicion_simple OPERADOR_OR condicion_simple .
+
+    $default  reduce usando la regla 40 (condicion_compuesta)
+
+
+estado 89
+
+   42 condicion_simple: expresion comparador expresion .
+   55 expresion: expresion . OPERACION_RESTA termino
+   56          | expresion . OPERACION_SUMA termino
+
+    OPERACION_SUMA   desplazar e ir al estado 46
+    OPERACION_RESTA  desplazar e ir al estado 47
+
+    $default  reduce usando la regla 42 (condicion_simple)
+
+
+estado 90
+
+   17 ciclo_especial: WHILE $@1 ID $@2 IN . $@3 lista_expresiones $@4 DO $@5 lista_sentencias ENDWHILE
+
+    $default  reduce usando la regla 14 ($@3)
+
+    $@3  ir al estado 95
+
+
+estado 91
+
+   50 iteracion: WHILE evaluable THEN lista_sentencias ENDWHILE .
+
+    $default  reduce usando la regla 50 (iteracion)
+
+
+estado 92
+
+   35 decision: OPERADOR_IF evaluable THEN lista_sentencias ELSE . lista_sentencias ENDIF
+
+    WHILE               desplazar e ir al estado 12
+    ID                  desplazar e ir al estado 13
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    OPERADOR_ENTRADA    desplazar e ir al estado 17
+    OPERADOR_SALIDA     desplazar e ir al estado 18
+    OPERADOR_IF         desplazar e ir al estado 19
+
+    ciclo_especial    ir al estado 20
+    lista_sentencias  ir al estado 96
+    sentencia         ir al estado 22
+    asignacion        ir al estado 23
+    decision          ir al estado 24
+    iteracion         ir al estado 25
+    entrada           ir al estado 26
+    salida            ir al estado 27
+    expresion         ir al estado 28
+    termino           ir al estado 29
+    factor            ir al estado 30
+
+
+estado 93
+
+   34 decision: OPERADOR_IF evaluable THEN lista_sentencias ENDIF .
+
+    $default  reduce usando la regla 34 (decision)
+
+
+estado 94
+
+   41 condicion_compuesta: OPERADOR_NOT PARENTESIS_ABIERTO condicion_simple PARENTESIS_CERRADO .
+
+    $default  reduce usando la regla 41 (condicion_compuesta)
+
+
+estado 95
+
+   17 ciclo_especial: WHILE $@1 ID $@2 IN $@3 . lista_expresiones $@4 DO $@5 lista_sentencias ENDWHILE
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+
+    lista_expresiones  ir al estado 97
+    expresion          ir al estado 98
+    termino            ir al estado 29
+    factor             ir al estado 30
+
+
+estado 96
+
+   18 lista_sentencias: lista_sentencias . sentencia
+   35 decision: OPERADOR_IF evaluable THEN lista_sentencias ELSE lista_sentencias . ENDIF
+
+    WHILE               desplazar e ir al estado 12
+    ID                  desplazar e ir al estado 13
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    OPERADOR_ENTRADA    desplazar e ir al estado 17
+    OPERADOR_SALIDA     desplazar e ir al estado 18
+    OPERADOR_IF         desplazar e ir al estado 19
+    ENDIF               desplazar e ir al estado 99
+
+    ciclo_especial  ir al estado 20
+    sentencia       ir al estado 45
+    asignacion      ir al estado 23
+    decision        ir al estado 24
+    iteracion       ir al estado 25
+    entrada         ir al estado 26
+    salida          ir al estado 27
+    expresion       ir al estado 28
+    termino         ir al estado 29
+    factor          ir al estado 30
+
+
+estado 97
+
+   17 ciclo_especial: WHILE $@1 ID $@2 IN $@3 lista_expresiones . $@4 DO $@5 lista_sentencias ENDWHILE
+   32 lista_expresiones: lista_expresiones . COMA expresion
+
+    COMA  desplazar e ir al estado 100
+
+    $default  reduce usando la regla 15 ($@4)
+
+    $@4  ir al estado 101
+
+
+estado 98
+
+   33 lista_expresiones: expresion .
+   55 expresion: expresion . OPERACION_RESTA termino
+   56          | expresion . OPERACION_SUMA termino
+
+    OPERACION_SUMA   desplazar e ir al estado 46
+    OPERACION_RESTA  desplazar e ir al estado 47
+
+    $default  reduce usando la regla 33 (lista_expresiones)
+
+
+estado 99
+
+   35 decision: OPERADOR_IF evaluable THEN lista_sentencias ELSE lista_sentencias ENDIF .
+
+    $default  reduce usando la regla 35 (decision)
+
+
+estado 100
+
+   32 lista_expresiones: lista_expresiones COMA . expresion
+
+    ID                  desplazar e ir al estado 38
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+
+    expresion  ir al estado 102
+    termino    ir al estado 29
+    factor     ir al estado 30
+
+
+estado 101
+
+   17 ciclo_especial: WHILE $@1 ID $@2 IN $@3 lista_expresiones $@4 . DO $@5 lista_sentencias ENDWHILE
+
+    DO  desplazar e ir al estado 103
+
+
+estado 102
+
+   32 lista_expresiones: lista_expresiones COMA expresion .
+   55 expresion: expresion . OPERACION_RESTA termino
+   56          | expresion . OPERACION_SUMA termino
+
+    OPERACION_SUMA   desplazar e ir al estado 46
+    OPERACION_RESTA  desplazar e ir al estado 47
+
+    $default  reduce usando la regla 32 (lista_expresiones)
+
+
+estado 103
+
+   17 ciclo_especial: WHILE $@1 ID $@2 IN $@3 lista_expresiones $@4 DO . $@5 lista_sentencias ENDWHILE
+
+    $default  reduce usando la regla 16 ($@5)
+
+    $@5  ir al estado 104
+
+
+estado 104
+
+   17 ciclo_especial: WHILE $@1 ID $@2 IN $@3 lista_expresiones $@4 DO $@5 . lista_sentencias ENDWHILE
+
+    WHILE               desplazar e ir al estado 12
+    ID                  desplazar e ir al estado 13
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    OPERADOR_ENTRADA    desplazar e ir al estado 17
+    OPERADOR_SALIDA     desplazar e ir al estado 18
+    OPERADOR_IF         desplazar e ir al estado 19
+
+    ciclo_especial    ir al estado 20
+    lista_sentencias  ir al estado 105
+    sentencia         ir al estado 22
+    asignacion        ir al estado 23
+    decision          ir al estado 24
+    iteracion         ir al estado 25
+    entrada           ir al estado 26
+    salida            ir al estado 27
+    expresion         ir al estado 28
+    termino           ir al estado 29
+    factor            ir al estado 30
+
+
+estado 105
+
+   17 ciclo_especial: WHILE $@1 ID $@2 IN $@3 lista_expresiones $@4 DO $@5 lista_sentencias . ENDWHILE
+   18 lista_sentencias: lista_sentencias . sentencia
+
+    WHILE               desplazar e ir al estado 12
+    ENDWHILE            desplazar e ir al estado 106
+    ID                  desplazar e ir al estado 13
+    ENTERO              desplazar e ir al estado 14
+    REAL                desplazar e ir al estado 15
+    PARENTESIS_ABIERTO  desplazar e ir al estado 16
+    OPERADOR_ENTRADA    desplazar e ir al estado 17
+    OPERADOR_SALIDA     desplazar e ir al estado 18
+    OPERADOR_IF         desplazar e ir al estado 19
+
+    ciclo_especial  ir al estado 20
+    sentencia       ir al estado 45
+    asignacion      ir al estado 23
+    decision        ir al estado 24
+    iteracion       ir al estado 25
+    entrada         ir al estado 26
+    salida          ir al estado 27
+    expresion       ir al estado 28
+    termino         ir al estado 29
+    factor          ir al estado 30
+
+
+estado 106
+
+   17 ciclo_especial: WHILE $@1 ID $@2 IN $@3 lista_expresiones $@4 DO $@5 lista_sentencias ENDWHILE .
+
+    $default  reduce usando la regla 17 (ciclo_especial)

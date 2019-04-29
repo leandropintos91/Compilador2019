@@ -1,0 +1,47 @@
+DEFVAR
+FLOAT: a; b; c
+INT: sarasaentero
+STRING : cadenita; cadena1
+ENDDEF
+
+
+b := b + 2
+b:=-9.9
+b:=-9.
+b:=-.9
+b:=9.9
+b:=9.
+b:=.9
+cadenita := ""
+b:=-9
+cadena1 := "cadena duplicada"
+cadena1 := "cadena duplicada"
+
+WHILE variable IN id1, sarasa, a+b, 5, 7, a*9 
+DO
+    a:=b
+    c:=a+b
+    IF (a <= b AND a >= 10 ) THEN
+
+        a:= c * 25
+        DISPLAY "texto de prueba"
+        GET cadena1
+        DISPLAY cadenita
+    ELSE
+    	a:= c * 28
+    ENDIF
+    a:=(9*8)
+ENDWHILE
+
+WHILE (a > b) THEN
+    c := c + 1
+    IF (a <= b) THEN
+
+        a:= c * 25
+    ENDIF
+
+ENDWHILE
+
+IF (a = 2) THEN
+    candenita := "Est3 es un Ej3mpl@"
+ENDIF
