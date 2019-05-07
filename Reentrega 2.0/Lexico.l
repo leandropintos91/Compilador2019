@@ -36,8 +36,8 @@ CADENA					\"[^"\n]*\"
 
 %%
 
-{COMENTARIOS}				{return COMENTARIOS;}
-{COMENTARIOS_ANIDADOS}		{return COMENTARIOS_ANIDADOS;}
+{COMENTARIOS}				{}
+{COMENTARIOS_ANIDADOS}		{}
 
 "WHILE"   					{return WHILE;}
 "ENDWHILE"					{return ENDWHILE;}

@@ -2,14 +2,14 @@ DEFVAR
 FLOAT: a; b; c
 INT: sarasaentero
 STRING : cadenita; cadena1
-ENDDEF
+ENDDEF		*/COMENTARIO	*/COMENTARIO ADENTRO DE UN COMENTARIO/* /*
 
-
+sarasaentero:=30
 b := b + 2
 b:=-9.9
 b:=-9.
 b:=-.9
-b:=9.9
+b:=9.999
 b:=9.
 b:=.9
 cadenita := ""
