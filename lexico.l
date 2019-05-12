@@ -19,6 +19,7 @@ void quitarComillas();
 
 FILE  *yyin;
 char auxS[100];
+char mensajeDeError[200];
 
 %}
 %option noyywrap  
@@ -75,32 +76,44 @@ CADENA					\"[^"\n]*\"
 "INT"						{return TIPO_ENTERO;}
 
 {ID}					{	sprintf(auxS,"%s", yytext);
-							if(validarLongitudId() == 0) 
-				 				mostrarError(yytext);
+							if(validarLongitudId() == 0) {
+								sprintf(mensajeDeError, "El identificador %s excede los %d caracteres de longitud.", yytext, LIMITE_ID);
+				 				mostrarError(mensajeDeError);
+							}
 							yylval.str_val=auxS;
 							return ID;
 						}
 
-{ENTERO}				{ 	if(validarLongitudEntero() == 0) 
-				 				mostrarError(yytext);
+{ENTERO}				{ 	if(validarLongitudEntero() == 0){
+								sprintf(mensajeDeError, "El ENTERO %s excede el rango admitido.", yytext);
+				 				mostrarError(mensajeDeError);
+							}
 				 			sscanf(yytext,"%d",&(yylval.int_val));
 							return ENTERO;
 						}
 
-{REAL}					{	if(validarLongitudReal() == 0) 
-				 				mostrarError(yytext);
+{REAL}					{	if(validarLongitudReal() == 0){
+								sprintf(mensajeDeError, "El REAL %s excede el rango admitido.", yytext);
+				 				mostrarError(mensajeDeError);
+							}
 				 			sscanf(yytext,"%lf",&(yylval.float_val));
 							return REAL;
 						}
 
-{CADENA} 				{	if(validarLongitudCadena() == 0)
-				 				mostrarError(yytext);
+{CADENA} 				{	if(validarLongitudCadena() == 0) {
+								sprintf(mensajeDeError, "Cadena %s excede los %d caracteres de longitud.", yytext, LIMITE_CADENA);
+				 				mostrarError(mensajeDeError);
+							}
 							sprintf(auxS,"%s", yytext);
 							quitarComillas();
 							yylval.str_val=auxS; 
 							return CADENA;
 						}
 
+.    					{
+							sprintf(mensajeDeError, "Caracter inválido: %s", yytext);
+							mostrarError(mensajeDeError);
+						}
 "\n"      		
 "\r"
 "\r\n"
@@ -108,10 +121,6 @@ CADENA					\"[^"\n]*\"
 " "
 
 
-.    					{
-							printf("Caracter invalido!");
-							exit(1);
-						}
 
 %%
 

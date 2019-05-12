@@ -79,7 +79,6 @@ OPERADOR_MAYOR_A
 OPERADOR_MENOR_A
 OPERADOR_MAYOR_O_IGUAL_A
 OPERADOR_MENOR_O_IGUAL_A
-OPERADOR_MAYOR
 OPERADOR_IGUAL_A
 OPERADOR_DISTINTO_A
 DEFVAR
@@ -92,112 +91,120 @@ TIPO_CADENA
 
 %%
 start_programa : programa {printf("Compilación OK\n");};
-programa : definicion_variables lista_sentencias;
+programa : definicion_variables lista_sentencias {printf("Programa OK\n");};
 
-definicion_variables: DEFVAR lista_definiciones ENDDEF;
+definicion_variables: DEFVAR lista_definiciones ENDDEF {printf("definicion_variables OK\n");};
 
-lista_definiciones: lista_definiciones definicion | definicion;
+lista_definiciones: lista_definiciones definicion {printf("definicion en lista_definiciones OK\n");} | definicion {printf("lista_definiciones OK\n");};
 
-definicion: tipo_variable DOS_PUNTOS lista_ids;
+definicion: tipo_variable DOS_PUNTOS lista_ids {printf("definicion OK\n");};
 
 lista_ids: 
   lista_ids PUNTO_Y_COMA ID 
     {
       printf("%s\n", yylval.str_val);
       guardarIDEnTablaDeSimbolos(yylval.str_val);
+      printf("ID en lista_ids OK\n");
     }
   | ID
     {
       printf("%s\n", yylval.str_val);
       guardarIDEnTablaDeSimbolos(yylval.str_val);
+      printf("ID en lista_ids OK\n");
     }
 
 tipo_variable: 
   TIPO_ENTERO 
     {
       guardarTipo("ENTERO");
+      printf("TIPO_ENTERO en tipo_variable OK\n");
     }
   | TIPO_REAL 
     {
       guardarTipo("REAL");
+      printf("TIPO_REAL en tipo_variable OK\n");
     }
   | TIPO_CADENA
     {
       guardarTipo("CADENA");
+      printf("TIPO_CADENA en tipo_variable OK\n");
     }
 
-ciclo_especial: WHILE {printf("WHILE OK\n");} 
-        ID {printf("Reconocí ID\n");} 
-        IN {printf("Reconocí IN\n");} 
-        lista_expresiones {printf("Reconocí lista_expresiones\n");} 
-        DO {printf("Reconocí DO\n");} lista_sentencias ENDWHILE {printf("Ciclo Especial OK\n");};
+ciclo_especial: WHILE ID IN lista_expresiones DO lista_sentencias ENDWHILE {printf("ciclo_especial OK\n");};
 
-lista_sentencias: lista_sentencias sentencia | sentencia;
+lista_sentencias: lista_sentencias sentencia {printf("lista_sentencias OK\n");} | sentencia {printf("lista_sentencias OK\n");};
 
-sentencia: asignacion | expresion | entrada | salida | ciclo_especial | decision | iteracion;
+sentencia: 
+  asignacion {printf("asignacion en sentencia OK\n");} 
+  | expresion {printf("expresion en sentencia OK\n");}
+  | entrada {printf("entrada en sentencia OK\n");}
+  | salida {printf("salida en sentencia OK\n");}
+  | ciclo_especial {printf("ciclo_especial en sentencia OK\n");}
+  | decision {printf("decision en sentencia OK\n");}
+  | iteracion {printf("iteracion en sentencia OK\n");};
 
-asignacion: ID {printf("ID %s en asignacion\n", yylval.str_val);} OPERADOR_ASIGNACION asignable;
+asignacion: ID {printf("ID %s en asignacion\n", yylval.str_val);} OPERADOR_ASIGNACION asignable {printf("asignacion OK\n");};
 
 asignable: 
-  expresion 
-  | cadena;
+  expresion {printf("expresion en asignable OK\n");}
+  | cadena {printf("cadena en asignable OK\n");};
 
 cadena: CADENA
   {
       guardarCadenaEnTablaDeSimbolos(yylval.str_val);
+      printf("cadena OK\n");
   };
 
-lista_expresiones:  lista_expresiones COMA expresion
-  | expresion;
+lista_expresiones:  lista_expresiones COMA expresion {printf("lista_expresiones OK\n");}
+  | expresion {printf("lista_expresiones OK\n");};
 
 decision: 
-  OPERADOR_IF evaluable THEN lista_sentencias ENDIF
-  | OPERADOR_IF evaluable THEN lista_sentencias ELSE lista_sentencias ENDIF;
+  OPERADOR_IF evaluable THEN lista_sentencias ENDIF {printf("decision OK\n");}
+  | OPERADOR_IF evaluable THEN lista_sentencias ELSE lista_sentencias ENDIF {printf("decision OK\n");};
 
-evaluable: PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO;
+evaluable: PARENTESIS_ABIERTO condicion PARENTESIS_CERRADO {printf("evaluable OK\n");};
 
-condicion: condicion_simple | condicion_compuesta;
+condicion: condicion_simple {printf("condicion OK\n");}; | condicion_compuesta {printf("condicion OK\n");};
 
-condicion_compuesta: condicion_simple OPERADOR_AND condicion_simple
-  | condicion_simple OPERADOR_OR condicion_simple
-  | OPERADOR_NOT PARENTESIS_ABIERTO condicion_simple PARENTESIS_CERRADO;
+condicion_compuesta: condicion_simple OPERADOR_AND condicion_simple {printf("condicion AND en condicion_compuesta OK\n");}
+  | condicion_simple OPERADOR_OR condicion_simple {printf("condicion OR en condicion_compuesta OK\n");}
+  | OPERADOR_NOT PARENTESIS_ABIERTO condicion_simple PARENTESIS_CERRADO {printf("condicion NOT condicion_compuesta OK\n");};
 
-condicion_simple: expresion comparador expresion;
+condicion_simple: expresion comparador expresion {printf("condicion_simple OK\n");};;
 
-comparador: OPERADOR_MAYOR_A
-  | OPERADOR_MENOR_A
-  | OPERADOR_MAYOR_O_IGUAL_A
-  | OPERADOR_MENOR_O_IGUAL_A
-  | OPERADOR_MAYOR
-  | OPERADOR_IGUAL_A
-  | OPERADOR_DISTINTO_A;
+comparador: OPERADOR_MAYOR_A {printf("comparador MAYOR A OK\n");}
+  | OPERADOR_MENOR_A {printf("comparador MENOR A OK\n");}
+  | OPERADOR_MAYOR_O_IGUAL_A {printf("comparador MAYOR O IGUAL A OK\n");}
+  | OPERADOR_MENOR_O_IGUAL_A {printf("comparador MENOR O IGUAL A OK\n");}
+  | OPERADOR_IGUAL_A {printf("comparador IGUAL A OK\n");}
+  | OPERADOR_DISTINTO_A {printf("comparador DISTINTO A OK\n");};
 
-iteracion: WHILE evaluable THEN lista_sentencias ENDWHILE;
+iteracion: WHILE evaluable THEN lista_sentencias ENDWHILE {printf("iteracion OK\n");};
 
-entrada: OPERADOR_ENTRADA ID;
+entrada: OPERADOR_ENTRADA ID {printf("entrada OK\n");};
 
-salida: OPERADOR_SALIDA ID | OPERADOR_SALIDA cadena;
+salida: OPERADOR_SALIDA ID {printf("salida OK\n");} | OPERADOR_SALIDA cadena {printf("salida OK\n");};
 
 expresion:
   termino
   |expresion OPERACION_RESTA termino
     {
-      printf("Resta OK\n");
+      printf("Resta en expresion OK\n");
     }
   |expresion OPERACION_SUMA termino
     {
-      printf("Suma OK\n");
+      printf("Suma en expresion OK\n");
     };
 
 termino: 
   factor
   |termino OPERACION_MULTIPLICACION factor  
     {
-      printf("Multiplicación OK\n");
+      printf("Multiplicación en termino OK\n");
     }
   |termino OPERACION_DIVISION factor  
     {
-    - printf("División OK\n");
+    - printf("División en termino OK\n");
     };
 
 factor: 
@@ -252,13 +259,13 @@ int main(int argc,char *argv[])
 
 int yyerror(void)
  {
-    printf("Syntax Error\n");
     system ("Pause");
     exit (1);
  }
 
 void mostrarError(char *mensaje) {
-  printf("ERROR!!!: %s\n", mensaje);
+  printf("ERROR EN COMPILACIÓN.\n");
+  printf("%s\n", mensaje);
   exit(1);
 }
 
