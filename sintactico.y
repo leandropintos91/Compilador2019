@@ -259,28 +259,29 @@ int main(int argc,char *argv[])
 
 int yyerror(void)
  {
+    printf("ERROR EN COMPILACIÓN.\n");
     system ("Pause");
     exit (1);
  }
 
 void mostrarError(char *mensaje) {
-  printf("ERROR EN COMPILACIÓN.\n");
   printf("%s\n", mensaje);
-  exit(1);
+  yyerror();
 }
 
 void guardarIDEnTablaDeSimbolos(char* token)
 {
+  char mensajeError[200];
   char nombreToken[100];
-  strcpy(nombreToken, "_");
-  strcat(nombreToken, token);
+  strcpy(nombreToken, token);
   if(!existeTokenEnTablaDeSimbolos(nombreToken))
   {
     strcpy(tablaDeSimbolos[cantidadTokens].nombre, nombreToken);
-    strcpy(tablaDeSimbolos[cantidadTokens].tipo,"ID" );
-    strcpy(tablaDeSimbolos[cantidadTokens].valor, nombreToken);
-    tablaDeSimbolos[cantidadTokens].longitud = strlen(token);
+    strcpy(tablaDeSimbolos[cantidadTokens].tipo,tipoVariableActual );
     cantidadTokens++;
+  } else {
+    sprintf(mensajeError, "El ID %s está duplicado.", token);
+    mostrarError(mensajeError);
   }
 }
 
@@ -295,7 +296,7 @@ void guardarCadenaEnTablaDeSimbolos(char* token)
   if(!existeCadenaEnTablaDeSimbolos(token))
   {
     strcpy(tablaDeSimbolos[cantidadTokens].nombre, nombreToken);
-    strcpy(tablaDeSimbolos[cantidadTokens].tipo,"CADENA" );
+    strcpy(tablaDeSimbolos[cantidadTokens].tipo,"CTE_CADENA" );
     strcpy(tablaDeSimbolos[cantidadTokens].valor, token);
     tablaDeSimbolos[cantidadTokens].longitud = (strlen(token));
     cantidadTokens++;
@@ -312,7 +313,7 @@ void guardarEnteroEnTablaDeSimbolos(int token)
   if(!existeTokenEnTablaDeSimbolos(nombreToken))
   {
     strcpy(tablaDeSimbolos[cantidadTokens].nombre, nombreToken);
-    strcpy(tablaDeSimbolos[cantidadTokens].tipo,"ENTERO");
+    strcpy(tablaDeSimbolos[cantidadTokens].tipo,"CTE_ENTERO");
     strcpy(tablaDeSimbolos[cantidadTokens].valor, nombreEntero);
     cantidadTokens++;
   }
@@ -328,7 +329,7 @@ void guardarRealEnTablaDeSimbolos(double token)
   if(!existeTokenEnTablaDeSimbolos(nombreToken))
   {
     strcpy(tablaDeSimbolos[cantidadTokens].nombre, nombreToken);
-    strcpy(tablaDeSimbolos[cantidadTokens].tipo,"REAL");
+    strcpy(tablaDeSimbolos[cantidadTokens].tipo,"CTE_REAL");
     strcpy(tablaDeSimbolos[cantidadTokens].valor, nombreReal);
     cantidadTokens++;
   }

@@ -1,7 +1,7 @@
 DEFVAR
 FLOAT: a; b; c
 INT: sarasaentero
-STRING : cadenita; cadena1
+STRING : cadenita; cadena1; cadena;
 ENDDEF		*/COMENTARIO	*/COMENTARIO ADENTRO DE UN COMENTARIO/* /*
 
 sarasaentero:=30
