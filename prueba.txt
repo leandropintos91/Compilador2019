@@ -1,7 +1,7 @@
 DEFVAR
 FLOAT: a; b; c
 INT: sarasaentero
-STRING : cadenita; cadena1; cadena;
+STRING : cadenita; cadena1; cadena
 ENDDEF		*/COMENTARIO	*/COMENTARIO ADENTRO DE UN COMENTARIO/* /*
 
 sarasaentero:=30
@@ -23,7 +23,7 @@ DO
     c:=a+b
     IF (a <= b AND a >= 10 ) THEN
 
-        a:= c * 25
+        a:= c * FIB(4 + FIB(FIB(4)+(5/8)))
         DISPLAY "texto de prueba"
         GET cadena1
         DISPLAY cadenita
@@ -43,5 +43,6 @@ WHILE (a > b) THEN
 ENDWHILE
 
 IF (a = 2) THEN
+	sarasaentero := FIB(3)
     candenita := "Est3 es un Ej3mpl@"
 ENDIF

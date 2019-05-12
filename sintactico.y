@@ -88,6 +88,7 @@ PUNTO_Y_COMA
 TIPO_ENTERO
 TIPO_REAL
 TIPO_CADENA
+FIBONACCI
 
 %%
 start_programa : programa {printf("Compilación OK\n");};
@@ -142,6 +143,8 @@ sentencia:
   | ciclo_especial {printf("ciclo_especial en sentencia OK\n");}
   | decision {printf("decision en sentencia OK\n");}
   | iteracion {printf("iteracion en sentencia OK\n");};
+
+fibonacci: FIBONACCI PARENTESIS_ABIERTO expresion PARENTESIS_CERRADO {printf("FIBONACCI OK\n");};
 
 asignacion: ID {printf("ID %s en asignacion\n", yylval.str_val);} OPERADOR_ASIGNACION asignable {printf("asignacion OK\n");};
 
@@ -223,7 +226,8 @@ factor:
       printf("REAL en FACTOR es: %f \n", $<float_val>$);
       guardarRealEnTablaDeSimbolos($<float_val>$);
     }
-  |PARENTESIS_ABIERTO expresion PARENTESIS_CERRADO;
+  |PARENTESIS_ABIERTO expresion PARENTESIS_CERRADO
+  | fibonacci;
 
 %%
 

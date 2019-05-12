@@ -74,6 +74,7 @@ CADENA					\"[^"\n]*\"
 "FLOAT"						{return TIPO_REAL;}
 "STRING"					{return TIPO_CADENA;}
 "INT"						{return TIPO_ENTERO;}
+"FIB"						{return FIBONACCI;}
 
 {ID}					{	sprintf(auxS,"%s", yytext);
 							if(validarLongitudId() == 0) {
