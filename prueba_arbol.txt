@@ -1,0 +1,8 @@
+DEFVAR
+FLOAT: a; b; c
+INT: sarasaentero
+STRING : cadenita; cadena1; cadena
+ENDDEF		*/COMENTARIO	*/COMENTARIO ADENTRO DE UN COMENTARIO/* /*
+
+
+a := a + b *c - 8 / a + 7/8

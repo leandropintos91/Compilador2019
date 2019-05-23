@@ -1,6 +1,7 @@
 #include "arbol.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 tipoArbol crearArbol() {
     return NULL;
@@ -10,7 +11,10 @@ tipoNodoArbol* crearNodo(char* valor, tipoNodoArbol* hijoIzquierdo, tipoNodoArbo
     tipoNodoArbol* nodo = (tipoNodoArbol*)malloc(sizeof(tipoNodoArbol));
     nodo->hijoDerecho = hijoDerecho;
     nodo->hijoIzquierdo = hijoIzquierdo;
-    nodo->valor = valor;
+    nodo->valor = (char*)malloc(sizeof(char)*50);
+    strcpy(nodo->valor, valor);
+    printf("Valor copiado: %s\n", valor);  
+    printf("Valores: %s\n", nodo->valor);
     return nodo;
 }
 
@@ -48,4 +52,23 @@ void recorrerArbolInorder(tipoArbol arbol) {
         recorrerArbolInorder(arbol->hijoIzquierdo);
     if(arbol->hijoDerecho !=  NULL)
         recorrerArbolInorder(arbol->hijoDerecho);
+}
+
+void recorrerArbolPostorder(tipoArbol arbol) {
+    if(arbol->hijoIzquierdo !=  NULL)
+        recorrerArbolPostorder(arbol->hijoIzquierdo);
+    if(arbol->hijoDerecho !=  NULL)
+        recorrerArbolPostorder(arbol->hijoDerecho);
+    printf("%s\n", arbol->valor);
+}
+
+void recorrerArbolInorderConNivel(tipoArbol arbol, int nivel) {
+    int i;
+    for(i = 0; i < nivel; i++)
+        printf("\t");
+    printf("%s\n", arbol->valor);
+    if(arbol->hijoIzquierdo !=  NULL)
+        recorrerArbolInorderConNivel(arbol->hijoIzquierdo, nivel +1);
+    if(arbol->hijoDerecho !=  NULL)
+        recorrerArbolInorderConNivel(arbol->hijoDerecho, nivel +1);
 }

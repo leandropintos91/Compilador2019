@@ -5,6 +5,7 @@
 #include <conio.h>
 #include "y.tab.h"
 #include <string.h>
+#include "arbol.h"
 int yystopparser=0;
 FILE  *yyin;
 char *yyltext;
@@ -24,6 +25,10 @@ typedef struct
 
 struct_tabla_de_simbolos tablaDeSimbolos[200];
 char tipoVariableActual[20];
+
+tipoNodoArbol *punteroFactor;
+tipoNodoArbol *punteroTermino;
+tipoNodoArbol *punteroExpresion;
 
 int yylex();
 int yyerror();
@@ -91,7 +96,11 @@ TIPO_CADENA
 FIBONACCI
 
 %%
-start_programa : programa {printf("Compilación OK\n");};
+start_programa : programa 
+  {
+    printf("Compilación OK\n");
+    recorrerArbolInorderConNivel(punteroExpresion, 0);
+  };
 programa : definicion_variables lista_sentencias {printf("Programa OK\n");};
 
 definicion_variables: DEFVAR lista_definiciones ENDDEF {printf("definicion_variables OK\n");};
@@ -190,24 +199,34 @@ salida: OPERADOR_SALIDA ID {printf("salida OK\n");} | OPERADOR_SALIDA cadena {pr
 
 expresion:
   termino
+  {
+    punteroExpresion = punteroTermino;
+  }
   |expresion OPERACION_RESTA termino
     {
       printf("Resta en expresion OK\n");
+      punteroExpresion = crearNodo("-", punteroExpresion, punteroTermino);
     }
   |expresion OPERACION_SUMA termino
     {
       printf("Suma en expresion OK\n");
+      punteroExpresion = crearNodo("+", punteroExpresion, punteroTermino);
     };
 
 termino: 
-  factor
+  factor 
+  {
+    punteroTermino = punteroFactor;
+  }
   |termino OPERACION_MULTIPLICACION factor  
     {
       printf("Multiplicación en termino OK\n");
+      punteroTermino = crearNodo("*", punteroTermino, punteroFactor);
     }
   |termino OPERACION_DIVISION factor  
     {
-    - printf("División en termino OK\n");
+      printf("División en termino OK\n");
+      punteroTermino = crearNodo("/", punteroTermino, punteroFactor);
     };
 
 factor: 
@@ -215,18 +234,30 @@ factor:
     {
       printf(" ID %s \n",yylval.str_val);
       printf("ID en FACTOR es: %s \n", yylval.str_val);
+      char *charAux = (char*)malloc(sizeof(char)*10);
+      strcpy(charAux, yylval.str_val);
+      punteroFactor = crearHoja(charAux);
     }
   | ENTERO 
     {
       printf("ENTERO en FACTOR es: %d \n", $<int_val>$);
       guardarEnteroEnTablaDeSimbolos($<int_val>$);
+      char *charAux = (char*)malloc(sizeof(char)*10);
+      sprintf(charAux, "%d", $<int_val>$);
+      punteroFactor = crearHoja(charAux);
     }
   | REAL 
     {
       printf("REAL en FACTOR es: %f \n", $<float_val>$);
       guardarRealEnTablaDeSimbolos($<float_val>$);
+      char *floatCadena = (char*)malloc(sizeof(char)*40);
+      sprintf(floatCadena, "%lf", $<float_val>$);
+      punteroFactor = crearHoja(floatCadena);
     }
-  |PARENTESIS_ABIERTO expresion PARENTESIS_CERRADO
+  |PARENTESIS_ABIERTO expresion PARENTESIS_CERRADO 
+  {
+    punteroFactor = punteroExpresion;
+  }
   | fibonacci;
 
 %%

@@ -1,7 +1,7 @@
 typedef struct nodo_arbol {
    char *valor;
-   tipoNodoArbol *hijoIzquierdo;
-   tipoNodoArbol *hijoDerecho;
+   struct nodo_arbol *hijoIzquierdo;
+   struct nodo_arbol *hijoDerecho;
 } tipoNodoArbol;
 
 typedef tipoNodoArbol *tipoArbol;
@@ -16,3 +16,5 @@ tipoNodoArbol* getHijoIzquierdo(tipoArbol);
 tipoNodoArbol* getHijoDerecho(tipoArbol);
 
 void recorrerArbolInorder(tipoArbol);
+void recorrerArbolPostorder(tipoArbol);
+void recorrerArbolInorderConNivel(tipoArbol, int);
