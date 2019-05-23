@@ -1,0 +1,92 @@
+acum = 0;
+if(n == 1) return 0;
+if(n == 2) return 1;
+
+anterior = 0;
+acum = 0;
+
+for(i=0; i <= n; i++) {
+	if(i == 1)
+		acum = 0;
+	if(i == 2)
+		acum = 1;
+	if(i > 2) {
+		suma = acum + anterior;
+		anterior = acum;
+		acum = suma;
+	}
+}
+return acum;
+
+
+
+------------------------------------------------------------------------------------------------------------------
+
+anterior = 0;
+acum = 0;
+i = 0;
+if i <= n;
+THEN
+	if(i == 1)
+		acum = 0;
+	if(i == 2)
+		acum = 1;
+	if(i > 2) {
+		suma = acum + anterior;
+		anterior = acum;
+		acum = suma;
+	}
+i = i + 1;
+
+
+------------------------------------------------------------------------------------------------------------------
+(cuidado: los punteros se crean derecho e izquierdo y se desapila izquierdo y derecho)
+(cuidado con asignación y comparación ==)
+
+Paux = nodo(+,i,1);
+Paux = nodo(=,i,Paux);
+apilar(Paux);
+Paux = nodo(=,acum,suma);
+apilar(Paux);
+Paux = nodo(=,ant,acum);
+apilar(Paux);
+Paux = nodo(AUX,desapilar(),desapilar());
+apilar(Paux);
+Paux = nodo(+,acum,ant);
+Paux = nodo(=,suma,Paux);
+apilar(Paux);
+Paux = nodo(AUX,desapilar(),desapilar());
+apilar(Paux);
+Paux = nodo(=,acum,1);
+apilar(Paux);
+Paux = nodo(CUERPO_IF,desapilar(),desapilar());
+apilar(Paux);
+Paux = nodo(==,i,2);
+apilar(Paux);
+Paux = nodo(IF,desapilar(),desapilar());
+apilar(Paux);
+Paux = nodo(=,acum,0);
+apilar(Paux);
+Paux = nodo(CUERPO_IF,desapilar(),desapilar());
+apilar(Paux);
+Paux = nodo(==,i,1);
+apilar(Paux);
+Paux = nodo(IF,desapilar(),desapilar);
+apilar(Paux);
+Paux = nodo(PAUX,desapilar(),desapilar);
+apilar(Paux);
+Paux = nodo(<=,i,Pexpresion);
+apilar(Paux);
+Paux = nodo(WHILE,desapilar(),desapilar());
+apilar(Paux);
+Paux = nodo(=,i,0);
+apilar(Paux);
+Paux = nodo(FOR,desapilar(),desapilar());
+apilar(Paux);
+Paux = nodo(=, acum, 0);
+apilar(Paux);
+Paux = nodo(=, ant, 0);
+apilar(Paux);
+Paux = nodo(AUX, desapilar(), desapilar());
+apilar(aux)
+Pfib = nodo(FIB, desapilar(), desapilar())
