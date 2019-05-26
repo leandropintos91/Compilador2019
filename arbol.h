@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 typedef struct nodo_arbol {
    char *valor;
    struct nodo_arbol *hijoIzquierdo;
@@ -19,3 +21,4 @@ void recorrerArbolPreorder(tipoArbol);
 void recorrerArbolPostorder(tipoArbol);
 void recorrerArbolInorder(tipoArbol);
 void recorrerArbolPreorderConNivel(tipoArbol, int);
+void guardarArbolInorder(tipoArbol arbol, FILE *archivo);

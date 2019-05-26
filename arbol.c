@@ -96,3 +96,10 @@ int tamanioArbol(tipoArbol arbol) {
     return  ((tamanioDerecho > tamanioIzquierdo) ? tamanioDerecho : tamanioIzquierdo) + 1;
 }
 
+void guardarArbolInorder(tipoArbol arbol, FILE *archivo) {
+    if(arbol->hijoIzquierdo !=  NULL)
+        guardarArbolInorder(arbol->hijoIzquierdo, archivo);
+    fprintf(archivo, "%s\n", arbol->valor);
+    if(arbol->hijoDerecho !=  NULL)
+        guardarArbolInorder(arbol->hijoDerecho, archivo);
+}

@@ -11,6 +11,7 @@ FILE  *yyin;
 char *yyltext;
 char *yytext;
 FILE *archivoTablaDeSimbolos;
+FILE *archivoCodigoIntermedio;
 
 int cantidadTokens = 0;
 char* numeroFibonacci;
@@ -510,6 +511,12 @@ int main(int argc,char *argv[])
         exit(1);
       }
       guardarTablaDeSimbolos();
+      if ((archivoCodigoIntermedio = fopen ("intermedia.txt","w"))== NULL)
+      {
+        printf("No se puede crear el archivo del código intermedio");
+        exit(1);
+      }
+      guardarArbolInorder(punteroPrograma, archivoCodigoIntermedio);
       if(fclose(archivoTablaDeSimbolos)!=0)
       {
         printf("No se puede CERRAR el archivo de la tabla de simbolos");
