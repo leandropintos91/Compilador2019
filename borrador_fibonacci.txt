@@ -75,7 +75,7 @@ Paux = nodo(IF,desapilar(),desapilar);
 apilar(Paux);
 Paux = nodo(PAUX,desapilar(),desapilar);
 apilar(Paux);
-Paux = nodo(<=,i,Pexpresion);
+Paux = nodo(<=,i,enteroFibonacci);
 apilar(Paux);
 Paux = nodo(WHILE,desapilar(),desapilar());
 apilar(Paux);

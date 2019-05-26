@@ -15,6 +15,7 @@ char* getValor(tipoArbol);
 tipoNodoArbol* getHijoIzquierdo(tipoArbol);
 tipoNodoArbol* getHijoDerecho(tipoArbol);
 
-void recorrerArbolInorder(tipoArbol);
+void recorrerArbolPreorder(tipoArbol);
 void recorrerArbolPostorder(tipoArbol);
-void recorrerArbolInorderConNivel(tipoArbol, int);
+void recorrerArbolInorder(tipoArbol);
+void recorrerArbolPreorderConNivel(tipoArbol, int);

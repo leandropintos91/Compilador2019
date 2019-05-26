@@ -23,12 +23,12 @@ DO
     c:=a+b
     IF (a <= b AND a >= 10 ) THEN
 
-        a:= c * FIB(4 + FIB(FIB(4)+(5/8)))
+        a:= c * FIB(4)
         DISPLAY "texto de prueba"
         GET cadena1
         DISPLAY cadenita
     ELSE
-    	a:= c * 28
+      a:= c * 28
     ENDIF
     a:=(9*8)
 ENDWHILE
@@ -36,13 +36,8 @@ ENDWHILE
 WHILE (a > b) THEN
     c := c + 1
     IF (a <= b) THEN
-
+@
         a:= c * 25
     ENDIF
 
 ENDWHILE
-
-IF (a = 2) THEN
-	sarasaentero := FIB(3)
-    candenita := "Est3 es un Ej3mpl@"
-ENDIF

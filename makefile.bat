@@ -2,7 +2,7 @@ flex lexico.l
 pause
 bison -dyv sintactico.y
 pause
-gcc.exe lex.yy.c y.tab.c arbol.h arbol.c -o Primera.exe
+gcc.exe lex.yy.c y.tab.c arbol.h arbol.c pilaDeArbol.h pilaDeArbol.c -o Primera.exe
 pause
 pause
 Primera.exe prueba.txt

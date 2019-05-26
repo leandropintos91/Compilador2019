@@ -13,8 +13,6 @@ tipoNodoArbol* crearNodo(char* valor, tipoNodoArbol* hijoIzquierdo, tipoNodoArbo
     nodo->hijoIzquierdo = hijoIzquierdo;
     nodo->valor = (char*)malloc(sizeof(char)*50);
     strcpy(nodo->valor, valor);
-    printf("Valor copiado: %s\n", valor);  
-    printf("Valores: %s\n", nodo->valor);
     return nodo;
 }
 
@@ -46,12 +44,12 @@ tipoNodoArbol* getHijoDerecho(tipoArbol arbol) {
     return arbol->hijoDerecho;
 }
 
-void recorrerArbolInorder(tipoArbol arbol) {
+void recorrerArbolPreorder(tipoArbol arbol) {
     printf("%s\n", arbol->valor);
     if(arbol->hijoIzquierdo !=  NULL)
-        recorrerArbolInorder(arbol->hijoIzquierdo);
+        recorrerArbolPreorder(arbol->hijoIzquierdo);
     if(arbol->hijoDerecho !=  NULL)
-        recorrerArbolInorder(arbol->hijoDerecho);
+        recorrerArbolPreorder(arbol->hijoDerecho);
 }
 
 void recorrerArbolPostorder(tipoArbol arbol) {
@@ -62,13 +60,39 @@ void recorrerArbolPostorder(tipoArbol arbol) {
     printf("%s\n", arbol->valor);
 }
 
-void recorrerArbolInorderConNivel(tipoArbol arbol, int nivel) {
+void recorrerArbolInorder(tipoArbol arbol) {
+    if(arbol->hijoIzquierdo !=  NULL)
+        recorrerArbolInorder(arbol->hijoIzquierdo);
+    printf("%s\n", arbol->valor);
+    if(arbol->hijoDerecho !=  NULL)
+        recorrerArbolInorder(arbol->hijoDerecho);
+}
+
+void recorrerArbolPreorderConNivel(tipoArbol arbol, int nivel) {
     int i;
     for(i = 0; i < nivel; i++)
         printf("\t");
     printf("%s\n", arbol->valor);
-    if(arbol->hijoIzquierdo !=  NULL)
-        recorrerArbolInorderConNivel(arbol->hijoIzquierdo, nivel +1);
+    if(arbol->hijoIzquierdo !=  NULL) 
+        recorrerArbolPreorderConNivel(arbol->hijoIzquierdo, nivel +1);
     if(arbol->hijoDerecho !=  NULL)
-        recorrerArbolInorderConNivel(arbol->hijoDerecho, nivel +1);
+        recorrerArbolPreorderConNivel(arbol->hijoDerecho, nivel +1);
 }
+
+int tamanioArbol(tipoArbol arbol) {
+    int tamanioDerecho = 0;
+    int tamanioIzquierdo = 0;
+
+    if(arbol->hijoDerecho == NULL && arbol->hijoIzquierdo == NULL)
+        return 0;
+
+    if(arbol->hijoDerecho != NULL) {
+        tamanioDerecho = tamanioArbol(arbol->hijoDerecho);
+    }
+    if(arbol->hijoIzquierdo != NULL) {
+        tamanioIzquierdo = tamanioArbol(arbol->hijoIzquierdo);
+    }
+
+    return  ((tamanioDerecho > tamanioIzquierdo) ? tamanioDerecho : tamanioIzquierdo) + 1;
+}
+
