@@ -4,6 +4,7 @@ typedef struct nodo_arbol {
    char *valor;
    struct nodo_arbol *hijoIzquierdo;
    struct nodo_arbol *hijoDerecho;
+   struct nodo_arbol *padre;
 } tipoNodoArbol;
 
 typedef tipoNodoArbol *tipoArbol;
@@ -22,3 +23,5 @@ void recorrerArbolPostorder(tipoArbol);
 void recorrerArbolInorder(tipoArbol);
 void recorrerArbolPreorderConNivel(tipoArbol, int);
 void guardarArbolInorder(tipoArbol arbol, FILE *archivo);
+
+tipoArbol buscarSubarbolInicioAssembler(tipoArbol arbol);

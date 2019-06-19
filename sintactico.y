@@ -805,7 +805,7 @@ void escribirAsembler(){
   escribirTablaDeSimbolos();
   escribirInicioCodigo();
 
-  //TODO generar codigo del arbol acá.
+  escribirCodigoIntermedio();
 
   escribirFinal();
 	fclose(archivoAssembler); 
@@ -872,4 +872,9 @@ void escribirInicioCodigo(){
 
 void escribirFinal(){
   fprintf(archivoAssembler, "\nMOV AH, 1\nINT 21h\nMOV AX, 4C00h\nINT 21h\n\nEND START\n");
+}
+
+void escribirCodigoIntermedio() {
+  printf("\n\n\n IMPRIMO SUBARBOL \n\n\n");
+  recorrerArbolPreorderConNivel(buscarSubarbolInicioAssembler(punteroPrograma), 0);
 }

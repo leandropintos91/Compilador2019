@@ -11,8 +11,18 @@ tipoNodoArbol* crearNodo(char* valor, tipoNodoArbol* hijoIzquierdo, tipoNodoArbo
     tipoNodoArbol* nodo = (tipoNodoArbol*)malloc(sizeof(tipoNodoArbol));
     nodo->hijoDerecho = hijoDerecho;
     nodo->hijoIzquierdo = hijoIzquierdo;
+    nodo->padre = NULL;
     nodo->valor = (char*)malloc(sizeof(char)*50);
     strcpy(nodo->valor, valor);
+
+    if(hijoDerecho != NULL) {
+        hijoDerecho->padre = nodo;
+    }
+
+    if(hijoIzquierdo != NULL) {
+        hijoIzquierdo->padre = nodo;
+    }
+
     return nodo;
 }
 
@@ -102,4 +112,33 @@ void guardarArbolInorder(tipoArbol arbol, FILE *archivo) {
     fprintf(archivo, "%s\n", arbol->valor);
     if(arbol->hijoDerecho !=  NULL)
         guardarArbolInorder(arbol->hijoDerecho, archivo);
+}
+
+tipoArbol buscarSubarbolInicioAssembler(tipoArbol arbol) {
+    tipoArbol subarbolIzquierdo;
+    tipoArbol subarbolDerecho;
+
+    if(arbol->hijoIzquierdo == NULL) {
+        return NULL;
+    }
+
+    subarbolIzquierdo = buscarSubarbolInicioAssembler(arbol->hijoIzquierdo);
+    if(arbol->hijoDerecho != NULL)
+        subarbolDerecho = buscarSubarbolInicioAssembler(arbol->hijoDerecho);
+
+    if(subarbolIzquierdo == NULL && subarbolDerecho == NULL)
+        return arbol;
+
+    if(subarbolIzquierdo != NULL)
+        return subarbolIzquierdo;
+
+    if(esOperadorUnario(arbol->valor))
+        return arbol;
+
+    return subarbolDerecho;
+}
+
+int esOperadorUnario(char* valor) {
+    if(!strcmp(valor, "ENTRADA") || !strcmp(valor, "SALIDA") || !strcmp(valor, "NOT"))
+        return 1;
 }
