@@ -829,17 +829,17 @@ void escribirTablaDeSimbolos() {
   fprintf(archivoAssembler, "NEW_LINE DB 0AH,0DH,'$'\n");
   fprintf(archivoAssembler, "CWprevio DW ?\n");
 
-  for(int i=0; i <= cantidadTokens; i++){
+  for(int i=0; i < cantidadTokens; i++){
     fprintf(archivoAssembler, "%s ", tablaDeSimbolos[i].nombre);
     strcpy(valorAuxiliar, tablaDeSimbolos[i].valor);
 
     switch(obtenerTipo(tablaDeSimbolos[i].tipo)){
       case TIPO_ENTERO:
-        fprintf(archivoAssembler, "dd %d\n", valorAuxiliar);
+        fprintf(archivoAssembler, "dd %s\n", valorAuxiliar);
         break;
 
       case TIPO_REAL:
-        fprintf(archivoAssembler, "dd %f\n", valorAuxiliar);
+        fprintf(archivoAssembler, "dd %s\n", valorAuxiliar);
         break;
 
       case TIPO_CADENA:
@@ -871,5 +871,5 @@ void escribirInicioCodigo(){
 }
 
 void escribirFinal(){
-  fprintf(archivoAssembler, "\nMOV AH, 1\nINT 21h\nMOV AX, 4C00h\nINT 21h\n\nEND\n");
+  fprintf(archivoAssembler, "\nMOV AH, 1\nINT 21h\nMOV AX, 4C00h\nINT 21h\n\nEND START\n");
 }
