@@ -4,11 +4,7 @@
 #include <conio.h>
 #include <string.h>
 #include "y.tab.h"
-
-#define LIMITE_REAL 2147483647
-#define LIMITE_ENTERO 32768
-#define LIMITE_CADENA 30
-#define LIMITE_ID 30
+#include "sintactico.h"
 
 int validarLongitudId();
 int validarLongitudReal();

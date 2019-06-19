@@ -6,12 +6,15 @@
 #include "y.tab.h"
 #include <string.h>
 #include "pilaDeArbol.h"
+#include "sintactico.h"
+
 int yystopparser=0;
 FILE  *yyin;
 char *yyltext;
 char *yytext;
 FILE *archivoTablaDeSimbolos;
 FILE *archivoCodigoIntermedio;
+FILE *archivoAssembler;
 
 int cantidadTokens = 0;
 char* numeroFibonacci;
@@ -81,6 +84,13 @@ void crearArbolFibonacci();
 char* buscarCadenaEnTablaDeSimbolos(char *valor);
 void apilarListaSentenciasConNodo(tipoNodoArbol *listaSentencias, tipoNodoArbol *sentencia);
 void apilarListaSentencias(tipoNodoArbol *sentencia);
+int obtenerTipo(char*);
+
+void escribirAsembler();
+void escribirCabecera();
+void escribirTablaDeSimbolos();
+void escribirInicioCodigo();
+void escribirFinal();
 
 %}
 
@@ -139,6 +149,7 @@ start_programa : programa
   {
     printf("Compilación OK\n");
     recorrerArbolPreorderConNivel(punteroPrograma, 0);
+    escribirAsembler();
   };
 programa : definicion_variables lista_sentencias 
   {
@@ -169,17 +180,17 @@ lista_ids:
 tipo_variable: 
   TIPO_ENTERO 
     {
-      guardarTipo("ENTERO");
+      guardarTipo(TIPO_VARIABLE_ENTERO);
       printf("TIPO_ENTERO en tipo_variable OK\n");
     }
   | TIPO_REAL 
     {
-      guardarTipo("REAL");
+      guardarTipo(TIPO_VARIABLE_REAL);
       printf("TIPO_REAL en tipo_variable OK\n");
     }
   | TIPO_CADENA
     {
-      guardarTipo("CADENA");
+      guardarTipo(TIPO_VARIABLE_CADENA);
       printf("TIPO_CADENA en tipo_variable OK\n");
     }
 
@@ -566,7 +577,7 @@ void guardarCadenaEnTablaDeSimbolos(char* token)
   if(!existeCadenaEnTablaDeSimbolos(token))
   {
     strcpy(tablaDeSimbolos[cantidadTokens].nombre, nombreToken);
-    strcpy(tablaDeSimbolos[cantidadTokens].tipo,"CTE_CADENA" );
+    strcpy(tablaDeSimbolos[cantidadTokens].tipo, TIPO_CONSTANTE_CADENA );
     strcpy(tablaDeSimbolos[cantidadTokens].valor, token);
     tablaDeSimbolos[cantidadTokens].longitud = (strlen(token));
     cantidadTokens++;
@@ -577,13 +588,18 @@ void guardarEnteroEnTablaDeSimbolos(int token)
 {     
   char nombreToken[100];
   char nombreEntero[20];
+
   sprintf(nombreEntero, "%d", token);
+
   strcpy(nombreToken,"_");
-  strcat(nombreToken, nombreEntero);
+  strcat(nombreToken, "entero");
+  char numeroCadena[5];
+  itoa(cantidadTokens, numeroCadena,10);
+  strcat(nombreToken, numeroCadena);
   if(!existeTokenEnTablaDeSimbolos(nombreToken))
   {
     strcpy(tablaDeSimbolos[cantidadTokens].nombre, nombreToken);
-    strcpy(tablaDeSimbolos[cantidadTokens].tipo,"CTE_ENTERO");
+    strcpy(tablaDeSimbolos[cantidadTokens].tipo, TIPO_CONSTANTE_ENTERO);
     strcpy(tablaDeSimbolos[cantidadTokens].valor, nombreEntero);
     cantidadTokens++;
   }
@@ -593,13 +609,18 @@ void guardarRealEnTablaDeSimbolos(double token)
 {     
   char nombreToken[100];
   char nombreReal[20];
+  
   sprintf(nombreReal, "%lf", token);
+
   strcpy(nombreToken,"_");
-  strcat(nombreToken, nombreReal);
+  strcat(nombreToken, "real");
+  char numeroCadena[5];
+  itoa(cantidadTokens, numeroCadena,10);
+  strcat(nombreToken, numeroCadena);
   if(!existeTokenEnTablaDeSimbolos(nombreToken))
   {
     strcpy(tablaDeSimbolos[cantidadTokens].nombre, nombreToken);
-    strcpy(tablaDeSimbolos[cantidadTokens].tipo,"CTE_REAL");
+    strcpy(tablaDeSimbolos[cantidadTokens].tipo, TIPO_CONSTANTE_REAL);
     strcpy(tablaDeSimbolos[cantidadTokens].valor, nombreReal);
     cantidadTokens++;
   }
@@ -775,4 +796,80 @@ void apilarListaSentenciasConNodo(tipoNodoArbol *listaSentencias, tipoNodoArbol 
 
 void apilarListaSentencias(tipoNodoArbol *sentencia) {
   apilarArbol(pilaListaSentencias, sentencia);
+}
+
+void escribirAsembler(){
+	
+  archivoAssembler = fopen("Final.asm", "w");
+	escribirCabecera();
+  escribirTablaDeSimbolos();
+  escribirInicioCodigo();
+
+  //TODO generar codigo del arbol acá.
+
+  escribirFinal();
+	fclose(archivoAssembler); 
+}
+
+void escribirCabecera() {
+	fprintf(archivoAssembler, "include macros2.asm \n");
+  fprintf(archivoAssembler, "include number.asm \n");
+
+  fprintf(archivoAssembler, ".MODEL LARGE\n");
+  fprintf(archivoAssembler, ".386\n");
+  fprintf(archivoAssembler, ".STACK 200h\n\n");
+
+	fprintf(archivoAssembler, "MAXTEXTSIZE EQU %d\n\n", LIMITE_CADENA);
+}
+
+void escribirTablaDeSimbolos() {
+  char valorAuxiliar[100];
+
+  fprintf(archivoAssembler, ".DATA\n");
+  fprintf(archivoAssembler, "NEW_LINE DB 0AH,0DH,'$'\n");
+  fprintf(archivoAssembler, "CWprevio DW ?\n");
+
+  for(int i=0; i <= cantidadTokens; i++){
+    fprintf(archivoAssembler, "%s ", tablaDeSimbolos[i].nombre);
+    strcpy(valorAuxiliar, tablaDeSimbolos[i].valor);
+
+    switch(obtenerTipo(tablaDeSimbolos[i].tipo)){
+      case TIPO_ENTERO:
+        fprintf(archivoAssembler, "dd %d\n", valorAuxiliar);
+        break;
+
+      case TIPO_REAL:
+        fprintf(archivoAssembler, "dd %f\n", valorAuxiliar);
+        break;
+
+      case TIPO_CADENA:
+        fprintf(archivoAssembler, "db \"%s\", '$'\n", valorAuxiliar);
+        break;
+
+      default: //Es una variable int, float o puntero a string
+        fprintf(archivoAssembler, "dd ?\n");
+    }
+  }
+
+  fprintf(archivoAssembler, "\n");
+}
+
+int obtenerTipo(char* tipo) {
+  if(strcmp(tipo, TIPO_CONSTANTE_CADENA) == 0)
+    return TIPO_CADENA;
+
+  if(strcmp(tipo, TIPO_CONSTANTE_REAL) == 0)
+    return TIPO_REAL;
+
+  if(strcmp(tipo, TIPO_CONSTANTE_ENTERO) == 0)
+    return TIPO_ENTERO;
+  return -1;
+}
+
+void escribirInicioCodigo(){
+  fprintf(archivoAssembler, ".CODE\n\nMOV AX, @DATA\nMOV DS, AX\nFINIT\n\n");
+}
+
+void escribirFinal(){
+  fprintf(archivoAssembler, "\nMOV AH, 1\nINT 21h\nMOV AX, 4C00h\nINT 21h\n\nEND\n");
 }
