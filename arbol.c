@@ -124,21 +124,30 @@ tipoArbol buscarSubarbolInicioAssembler(tipoArbol arbol) {
 
     subarbolIzquierdo = buscarSubarbolInicioAssembler(arbol->hijoIzquierdo);
     if(arbol->hijoDerecho != NULL)
+    {
         subarbolDerecho = buscarSubarbolInicioAssembler(arbol->hijoDerecho);
+    }
 
-    if(subarbolIzquierdo == NULL && subarbolDerecho == NULL)
+    if(subarbolIzquierdo == NULL && subarbolDerecho == NULL) {
         return arbol;
+    }
 
-    if(subarbolIzquierdo != NULL)
+    if(subarbolIzquierdo != NULL) {
         return subarbolIzquierdo;
+    }
 
-    if(esOperadorUnario(arbol->valor))
+    if(esOperadorUnario(arbol->valor) == 1) {
         return arbol;
+    }
 
     return subarbolDerecho;
 }
 
 int esOperadorUnario(char* valor) {
-    if(!strcmp(valor, "ENTRADA") || !strcmp(valor, "SALIDA") || !strcmp(valor, "NOT"))
+    if(strcmp(valor, "ENTRADA") == 0 || strcmp(valor, "SALIDA") == 0 || strcmp(valor, "NOT") == 0)
         return 1;
+}
+
+void podarArbol(tipoNodoArbol* arbol) {
+    arbol->hijoDerecho = arbol->hijoIzquierdo = NULL;
 }

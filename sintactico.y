@@ -7,6 +7,7 @@
 #include <string.h>
 #include "pilaDeArbol.h"
 #include "sintactico.h"
+#include "tablaDeSimbolos.h"
 
 int yystopparser=0;
 FILE  *yyin;
@@ -18,12 +19,13 @@ FILE *archivoAssembler;
 
 int cantidadTokens = 0;
 char* numeroFibonacci;
+int contadorVariableAssembler = 1;
 
 // TABLA SIMBOLOS
 typedef struct
 {
     char nombre[100];
-    char tipo  [11];
+    int tipo;
     char valor [100];
     int longitud;
 } struct_tabla_de_simbolos;
@@ -71,15 +73,17 @@ char* idAux;
 int yylex();
 int yyerror();
 
+char* crearNombreID(char*);
+struct_tabla_de_simbolos* buscarEnTablaDeSimbolos(char*);
 void mostrarError(char *mensaje);
-void guardarTipo(char * tipoVariable);
+void guardarTipo(const char * tipoVariable);
 int existeCadenaEnTablaDeSimbolos(char* valor);
 int existeTokenEnTablaDeSimbolos(char* nombre);
 void guardarTablaDeSimbolos();
-void guardarEnteroEnTablaDeSimbolos(int token);
-void guardarCadenaEnTablaDeSimbolos(char* token);
-void guardarIDEnTablaDeSimbolos(char* token);
-void guardarRealEnTablaDeSimbolos(double token);
+char* guardarEnteroEnTablaDeSimbolos(int token);
+char* guardarCadenaEnTablaDeSimbolos(char* token);
+char* guardarIDEnTablaDeSimbolos(char* token, int tipo);
+char* guardarRealEnTablaDeSimbolos(double token);
 void crearArbolFibonacci();
 char* buscarCadenaEnTablaDeSimbolos(char *valor);
 void apilarListaSentenciasConNodo(tipoNodoArbol *listaSentencias, tipoNodoArbol *sentencia);
@@ -91,6 +95,13 @@ void escribirCabecera();
 void escribirTablaDeSimbolos();
 void escribirInicioCodigo();
 void escribirFinal();
+void escribirCodigoIntermedio();
+void escribirAsemblerDeSubarbol(tipoNodoArbol*, char*);
+int obtenerOperador(char*);
+char* escribirAsemblerSuma(tipoNodoArbol*);
+void assemblerCargarEntero(char*);
+char* assemblerGuardarResultado();
+char* proximaVariableAuxiliarAssembler();
 
 %}
 
@@ -167,13 +178,13 @@ lista_ids:
   lista_ids PUNTO_Y_COMA ID 
     {
       printf("%s\n", yylval.str_val);
-      guardarIDEnTablaDeSimbolos(yylval.str_val);
+      guardarIDEnTablaDeSimbolos(yylval.str_val, obtenerTipo(tipoVariableActual));
       printf("ID en lista_ids OK\n");
     }
   | ID
     {
       printf("%s\n", yylval.str_val);
-      guardarIDEnTablaDeSimbolos(yylval.str_val);
+      guardarIDEnTablaDeSimbolos(yylval.str_val, obtenerTipo(tipoVariableActual));
       printf("ID en lista_ids OK\n");
     }
 
@@ -268,7 +279,7 @@ fibonacci: FIBONACCI PARENTESIS_ABIERTO ENTERO
 
 asignacion: ID 
   {
-    copiarCharEn(&idAux, yylval.str_val);
+    copiarCharEn(&idAux, crearNombreID(yylval.str_val));
     printf("ID %s en asignacion\n", yylval.str_val);
   } 
   OPERADOR_ASIGNACION asignable 
@@ -467,25 +478,17 @@ factor:
     {
       printf(" ID %s \n",yylval.str_val);
       printf("ID en FACTOR es: %s \n", yylval.str_val);
-      char *charAux = (char*)malloc(sizeof(char)*10);
-      strcpy(charAux, yylval.str_val);
-      punteroFactor = crearHoja(charAux);
+      punteroFactor = crearHoja(crearNombreID(yylval.str_val));
     }
   | ENTERO 
     {
       printf("ENTERO en FACTOR es: %d \n", $<int_val>$);
-      guardarEnteroEnTablaDeSimbolos($<int_val>$);
-      char *charAux = (char*)malloc(sizeof(char)*10);
-      sprintf(charAux, "%d", $<int_val>$);
-      punteroFactor = crearHoja(charAux);
+      punteroFactor = crearHoja(guardarEnteroEnTablaDeSimbolos($<int_val>$));
     }
   | REAL 
     {
       printf("REAL en FACTOR es: %f \n", $<float_val>$);
-      guardarRealEnTablaDeSimbolos($<float_val>$);
-      char *floatCadena = (char*)malloc(sizeof(char)*40);
-      sprintf(floatCadena, "%lf", $<float_val>$);
-      punteroFactor = crearHoja(floatCadena);
+      punteroFactor = crearHoja(guardarRealEnTablaDeSimbolos($<float_val>$));
     }
   |PARENTESIS_ABIERTO expresion PARENTESIS_CERRADO 
   {
@@ -522,17 +525,19 @@ int main(int argc,char *argv[])
         exit(1);
       }
       guardarTablaDeSimbolos();
+      if(fclose(archivoTablaDeSimbolos)!=0)
+      {
+        printf("No se puede CERRAR el archivo de la tabla de simbolos");
+        exit(1);
+      }
       if ((archivoCodigoIntermedio = fopen ("intermedia.txt","w"))== NULL)
       {
         printf("No se puede crear el archivo del código intermedio");
         exit(1);
       }
       guardarArbolInorder(punteroPrograma, archivoCodigoIntermedio);
-      if(fclose(archivoTablaDeSimbolos)!=0)
-      {
-        printf("No se puede CERRAR el archivo de la tabla de simbolos");
-        exit(1);
-      }
+      fclose(archivoCodigoIntermedio);
+
   }
   fclose(yyin);
   return 0;
@@ -550,43 +555,52 @@ void mostrarError(char *mensaje) {
   yyerror();
 }
 
-void guardarIDEnTablaDeSimbolos(char* token)
+char* crearNombreID(char* id) {
+  char* variable = (char*)malloc(100);
+  strcpy(variable, "_");
+  strcat(variable,id);
+  return variable;
+}
+
+char* guardarIDEnTablaDeSimbolos(char* token, int tipo)
 {
   char mensajeError[200];
-  char nombreToken[100];
-  strcpy(nombreToken, token);
+  char* nombreToken = (char*)malloc(100);
+  strcpy(nombreToken, "_");
+  strcat(nombreToken, token);
   if(!existeTokenEnTablaDeSimbolos(nombreToken))
   {
     strcpy(tablaDeSimbolos[cantidadTokens].nombre, nombreToken);
-    strcpy(tablaDeSimbolos[cantidadTokens].tipo,tipoVariableActual );
+    tablaDeSimbolos[cantidadTokens].tipo = tipo;
     cantidadTokens++;
+    return nombreToken;
   } else {
     sprintf(mensajeError, "El ID %s está duplicado.", token);
     mostrarError(mensajeError);
+    return NULL;
   }
 }
 
-void guardarCadenaEnTablaDeSimbolos(char* token)
+char* guardarCadenaEnTablaDeSimbolos(char* token)
 {
-  char nombreToken[100];
-  strcpy(nombreToken,"_");
-  strcat(nombreToken, "cadena");
+  char* nombreToken = crearNombreID(token);
   char numeroCadena[5];
   itoa(cantidadTokens, numeroCadena,10);
   strcat(nombreToken, numeroCadena);
   if(!existeCadenaEnTablaDeSimbolos(token))
   {
     strcpy(tablaDeSimbolos[cantidadTokens].nombre, nombreToken);
-    strcpy(tablaDeSimbolos[cantidadTokens].tipo, TIPO_CONSTANTE_CADENA );
+    tablaDeSimbolos[cantidadTokens].tipo = CONSTANTE_CADENA;
     strcpy(tablaDeSimbolos[cantidadTokens].valor, token);
     tablaDeSimbolos[cantidadTokens].longitud = (strlen(token));
     cantidadTokens++;
   }
+  return nombreToken;
 }
 
-void guardarEnteroEnTablaDeSimbolos(int token)
+char* guardarEnteroEnTablaDeSimbolos(int token)
 {     
-  char nombreToken[100];
+  char* nombreToken = (char*)malloc(100);
   char nombreEntero[20];
 
   sprintf(nombreEntero, "%d", token);
@@ -599,15 +613,16 @@ void guardarEnteroEnTablaDeSimbolos(int token)
   if(!existeTokenEnTablaDeSimbolos(nombreToken))
   {
     strcpy(tablaDeSimbolos[cantidadTokens].nombre, nombreToken);
-    strcpy(tablaDeSimbolos[cantidadTokens].tipo, TIPO_CONSTANTE_ENTERO);
+    tablaDeSimbolos[cantidadTokens].tipo = CONSTANTE_ENTERO;
     strcpy(tablaDeSimbolos[cantidadTokens].valor, nombreEntero);
     cantidadTokens++;
   }
+  return nombreToken;
 }
 
-void guardarRealEnTablaDeSimbolos(double token)
+char* guardarRealEnTablaDeSimbolos(double token)
 {     
-  char nombreToken[100];
+  char* nombreToken = (char*)malloc(100);
   char nombreReal[20];
   
   sprintf(nombreReal, "%lf", token);
@@ -620,10 +635,11 @@ void guardarRealEnTablaDeSimbolos(double token)
   if(!existeTokenEnTablaDeSimbolos(nombreToken))
   {
     strcpy(tablaDeSimbolos[cantidadTokens].nombre, nombreToken);
-    strcpy(tablaDeSimbolos[cantidadTokens].tipo, TIPO_CONSTANTE_REAL);
+    tablaDeSimbolos[cantidadTokens].tipo = CONSTANTE_REAL;
     strcpy(tablaDeSimbolos[cantidadTokens].valor, nombreReal);
     cantidadTokens++;
   }
+  return nombreToken;
 }
 
 void guardarTablaDeSimbolos()
@@ -638,7 +654,7 @@ void guardarTablaDeSimbolos()
       longitud[0] = '\0';
     fprintf(
       archivoTablaDeSimbolos,
-      "Nombre: %s  | Tipo: %s   | Valor: %s | Longitud: %s \n",
+      "Nombre: %s  | Tipo: %d   | Valor: %s | Longitud: %s \n",
       tablaDeSimbolos[i].nombre, tablaDeSimbolos[i].tipo, tablaDeSimbolos[i].valor, longitud);
   }
 }
@@ -685,7 +701,22 @@ char* buscarCadenaEnTablaDeSimbolos(char* valor)
   return 0;
 }
 
-void guardarTipo(char * tipoVariable) {
+struct_tabla_de_simbolos* buscarEnTablaDeSimbolos(char* nombre) {
+  int i;
+  printf("Busco nombre nombre: %s\n", nombre);
+  for (i=0; i<cantidadTokens; i++)
+    {
+    if(strcmp(tablaDeSimbolos[i].nombre, nombre) == 0)
+    {
+      
+      return &tablaDeSimbolos[i];
+    }
+  }
+  
+  return NULL;
+}
+
+void guardarTipo(const char * tipoVariable) {
   strcpy(tipoVariableActual, tipoVariable);
 }
 
@@ -833,7 +864,7 @@ void escribirTablaDeSimbolos() {
     fprintf(archivoAssembler, "%s ", tablaDeSimbolos[i].nombre);
     strcpy(valorAuxiliar, tablaDeSimbolos[i].valor);
 
-    switch(obtenerTipo(tablaDeSimbolos[i].tipo)){
+    switch(tablaDeSimbolos[i].tipo){
       case TIPO_ENTERO:
         fprintf(archivoAssembler, "dd %s\n", valorAuxiliar);
         break;
@@ -855,19 +886,31 @@ void escribirTablaDeSimbolos() {
 }
 
 int obtenerTipo(char* tipo) {
+  int valor;
   if(strcmp(tipo, TIPO_CONSTANTE_CADENA) == 0)
-    return TIPO_CADENA;
+    valor = CONSTANTE_CADENA;
 
-  if(strcmp(tipo, TIPO_CONSTANTE_REAL) == 0)
-    return TIPO_REAL;
+  else if(strcmp(tipo, TIPO_CONSTANTE_REAL) == 0)
+    valor =  CONSTANTE_REAL;
 
-  if(strcmp(tipo, TIPO_CONSTANTE_ENTERO) == 0)
-    return TIPO_ENTERO;
-  return -1;
+  else if(strcmp(tipo, TIPO_CONSTANTE_ENTERO) == 0)
+    valor =  CONSTANTE_ENTERO;
+
+  else if(strcmp(tipo, TIPO_VARIABLE_CADENA) == 0)
+    valor =  VARIABLE_CADENA;
+
+  else if(strcmp(tipo, TIPO_VARIABLE_REAL) == 0)
+    valor =  VARIABLE_REAL;
+
+  else if(strcmp(tipo, TIPO_VARIABLE_ENTERO) == 0)
+    valor =  VARIABLE_ENTERO;
+  else
+    valor =  -1;
+  return valor;
 }
 
 void escribirInicioCodigo(){
-  fprintf(archivoAssembler, ".CODE\n\nMOV AX, @DATA\nMOV DS, AX\nFINIT\n\n");
+  fprintf(archivoAssembler, ".CODE\n\nSTART:\n\nMOV AX, @DATA\nMOV DS, AX\nFINIT\n\n");
 }
 
 void escribirFinal(){
@@ -875,6 +918,87 @@ void escribirFinal(){
 }
 
 void escribirCodigoIntermedio() {
-  printf("\n\n\n IMPRIMO SUBARBOL \n\n\n");
-  recorrerArbolPreorderConNivel(buscarSubarbolInicioAssembler(punteroPrograma), 0);
+  tipoNodoArbol* subarbol = buscarSubarbolInicioAssembler(punteroPrograma);
+  char* nuevaVariableAuxiliarDeAssembler;
+
+  while(subarbol != NULL) {
+    escribirAsemblerDeSubarbol(subarbol, nuevaVariableAuxiliarDeAssembler);
+    podarArbol(subarbol);
+    setValor(subarbol, nuevaVariableAuxiliarDeAssembler);
+    subarbol = buscarSubarbolInicioAssembler(punteroPrograma);
+  }
+}
+
+void escribirAsemblerDeSubarbol(tipoNodoArbol* subarbol, char* nuevaVariableAuxiliarDeAssembler) {
+  if(obtenerOperador(subarbol->valor) == OPERACION_SUMA) {
+    nuevaVariableAuxiliarDeAssembler = escribirAsemblerSuma(subarbol);
+  }
+
+  if(obtenerOperador(subarbol->valor) == OPERACION_RESTA) {
+
+  }
+
+  if(obtenerOperador(subarbol->valor) == OPERACION_MULTIPLICACION) {
+
+  }
+
+  if(obtenerOperador(subarbol->valor) == OPERACION_DIVISION) {
+
+  }
+}
+
+int obtenerOperador(char* operador) {
+  if(strcmp(operador, "+") == 0) {
+    return OPERACION_SUMA;
+  }
+
+  if(strcmp(operador, "-") == 0)
+    return OPERACION_RESTA;
+
+  if(strcmp(operador, "*") == 0)
+    return OPERACION_MULTIPLICACION;
+
+  if(strcmp(operador, "/") == 0)
+    return OPERACION_DIVISION;
+}
+
+char* escribirAsemblerSuma(tipoNodoArbol* subarbol) {
+  struct_tabla_de_simbolos * punteroIzquierdo = buscarEnTablaDeSimbolos(subarbol->hijoIzquierdo->valor);
+  struct_tabla_de_simbolos * punteroDerecho = buscarEnTablaDeSimbolos(subarbol->hijoDerecho->valor);
+
+  if(punteroIzquierdo->tipo == VARIABLE_ENTERO || punteroIzquierdo->tipo == CONSTANTE_ENTERO) {
+    printf("Valor izq es: %s\n",subarbol->hijoIzquierdo->valor);
+    assemblerCargarEntero(subarbol->hijoIzquierdo->valor);
+  }
+
+  if(punteroDerecho->tipo == VARIABLE_ENTERO || punteroDerecho->tipo == CONSTANTE_ENTERO) {
+    printf("Valor der es: %s\n",subarbol->hijoDerecho->valor);
+    assemblerCargarEntero(subarbol->hijoDerecho->valor);
+  }
+
+  fprintf(archivoAssembler, "FADD\n");
+
+  return assemblerGuardarResultado();
+}
+
+void assemblerCargarEntero(char* valor) {
+  fprintf(archivoAssembler, "FILD %s\n", valor);
+}
+
+char* assemblerGuardarResultado(int tipo) {
+  char* variableAuxiliarAssembler = proximaVariableAuxiliarAssembler();
+  guardarIDEnTablaDeSimbolos(variableAuxiliarAssembler, tipo);
+  fprintf(archivoAssembler, "FISTP %s\n", variableAuxiliarAssembler);
+  fprintf(archivoAssembler, "FISTP Descarga\n");
+  return variableAuxiliarAssembler;
+}
+
+char* proximaVariableAuxiliarAssembler() {
+  char* nuevaVariableAssembler = (char*)malloc(100);
+  char numero[4];
+  sprintf(numero,"%d", contadorVariableAssembler);
+  strcpy(nuevaVariableAssembler, "@aux");
+  strcat(nuevaVariableAssembler, numero);
+  contadorVariableAssembler++;
+  return nuevaVariableAssembler;
 }

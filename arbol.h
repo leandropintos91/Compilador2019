@@ -25,3 +25,7 @@ void recorrerArbolPreorderConNivel(tipoArbol, int);
 void guardarArbolInorder(tipoArbol arbol, FILE *archivo);
 
 tipoArbol buscarSubarbolInicioAssembler(tipoArbol arbol);
+
+void podarArbol(tipoNodoArbol*);
+int contarOperadores(tipoNodoArbol* arbol);
+int esOperadorAlgebraico(char* operador);
