@@ -8,6 +8,7 @@
 #include "pilaDeArbol.h"
 #include "sintactico.h"
 #include "tablaDeSimbolos.h"
+#include "lista.h"
 
 int yystopparser=0;
 FILE  *yyin;
@@ -32,6 +33,7 @@ typedef struct
 
 struct_tabla_de_simbolos tablaDeSimbolos[200];
 char tipoVariableActual[20];
+tipoNodoLista* listaCodigo;
 
 tipoNodoArbol *punteroFactor = NULL;
 tipoNodoArbol *punteroTermino = NULL;
@@ -65,6 +67,7 @@ PilaDeArbol *pilaListaSentencias = NULL;
 tipoNodoArbol *Pfib;
 tipoNodoArbol *Paux;
 PilaDeArbol *pilaArbol;
+char lineaDeAsssembler[300];
 
 void copiarCharEn(char **, char*);
 char* operadorAux;
@@ -93,13 +96,14 @@ int obtenerTipo(char*);
 void escribirAsembler();
 void escribirCabecera();
 void escribirTablaDeSimbolos();
-void escribirInicioCodigo();
+void procesarInicioCodigo();
 void escribirFinal();
-void escribirCodigoIntermedio();
-void escribirAsemblerDeSubarbol(tipoNodoArbol*, char*);
+void procesarCodigoIntermedio();
+char* escribirAsemblerDeSubarbol(tipoNodoArbol*);
 int obtenerOperador(char*);
 char* escribirAsemblerSuma(tipoNodoArbol*);
 void assemblerCargarEntero(char*);
+void assemblerCargarReal(char*);
 char* assemblerGuardarResultado();
 char* proximaVariableAuxiliarAssembler();
 
@@ -703,7 +707,6 @@ char* buscarCadenaEnTablaDeSimbolos(char* valor)
 
 struct_tabla_de_simbolos* buscarEnTablaDeSimbolos(char* nombre) {
   int i;
-  printf("Busco nombre nombre: %s\n", nombre);
   for (i=0; i<cantidadTokens; i++)
     {
     if(strcmp(tablaDeSimbolos[i].nombre, nombre) == 0)
@@ -832,14 +835,15 @@ void apilarListaSentencias(tipoNodoArbol *sentencia) {
 void escribirAsembler(){
 	
   archivoAssembler = fopen("Final.asm", "w");
+  listaCodigo = crearLista();
 	escribirCabecera();
+  procesarInicioCodigo();
+  procesarCodigoIntermedio();
   escribirTablaDeSimbolos();
-  escribirInicioCodigo();
-
-  escribirCodigoIntermedio();
-
+  escribirLista(listaCodigo,archivoAssembler);
   escribirFinal();
 	fclose(archivoAssembler); 
+  recorrerLista(listaCodigo);
 }
 
 void escribirCabecera() {
@@ -865,15 +869,15 @@ void escribirTablaDeSimbolos() {
     strcpy(valorAuxiliar, tablaDeSimbolos[i].valor);
 
     switch(tablaDeSimbolos[i].tipo){
-      case TIPO_ENTERO:
+      case CONSTANTE_ENTERO:
         fprintf(archivoAssembler, "dd %s\n", valorAuxiliar);
         break;
 
-      case TIPO_REAL:
+      case CONSTANTE_REAL:
         fprintf(archivoAssembler, "dd %s\n", valorAuxiliar);
         break;
 
-      case TIPO_CADENA:
+      case CONSTANTE_CADENA:
         fprintf(archivoAssembler, "db \"%s\", '$'\n", valorAuxiliar);
         break;
 
@@ -909,29 +913,30 @@ int obtenerTipo(char* tipo) {
   return valor;
 }
 
-void escribirInicioCodigo(){
-  fprintf(archivoAssembler, ".CODE\n\nSTART:\n\nMOV AX, @DATA\nMOV DS, AX\nFINIT\n\n");
+void procesarInicioCodigo(){
+  sprintf(lineaDeAsssembler, ".CODE\n\nSTART:\n\nMOV AX, @DATA\nMOV DS, AX\nFINIT\n\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
 }
 
 void escribirFinal(){
   fprintf(archivoAssembler, "\nMOV AH, 1\nINT 21h\nMOV AX, 4C00h\nINT 21h\n\nEND START\n");
 }
 
-void escribirCodigoIntermedio() {
+void procesarCodigoIntermedio() {
   tipoNodoArbol* subarbol = buscarSubarbolInicioAssembler(punteroPrograma);
   char* nuevaVariableAuxiliarDeAssembler;
 
   while(subarbol != NULL) {
-    escribirAsemblerDeSubarbol(subarbol, nuevaVariableAuxiliarDeAssembler);
+    nuevaVariableAuxiliarDeAssembler = escribirAsemblerDeSubarbol(subarbol);
     podarArbol(subarbol);
     setValor(subarbol, nuevaVariableAuxiliarDeAssembler);
     subarbol = buscarSubarbolInicioAssembler(punteroPrograma);
   }
 }
 
-void escribirAsemblerDeSubarbol(tipoNodoArbol* subarbol, char* nuevaVariableAuxiliarDeAssembler) {
+char* escribirAsemblerDeSubarbol(tipoNodoArbol* subarbol) {
   if(obtenerOperador(subarbol->valor) == OPERACION_SUMA) {
-    nuevaVariableAuxiliarDeAssembler = escribirAsemblerSuma(subarbol);
+    return escribirAsemblerSuma(subarbol);
   }
 
   if(obtenerOperador(subarbol->valor) == OPERACION_RESTA) {
@@ -944,6 +949,15 @@ void escribirAsemblerDeSubarbol(tipoNodoArbol* subarbol, char* nuevaVariableAuxi
 
   if(obtenerOperador(subarbol->valor) == OPERACION_DIVISION) {
 
+  }
+  if(obtenerOperador(subarbol->valor) == OPERADOR_ASIGNACION) {
+    if(subarbol != NULL && subarbol->hijoDerecho != NULL)
+      printf("la variable auxiliar derecha es : %s\n", subarbol->hijoDerecho->valor);
+    escribirAsemblerAsignacion(subarbol);
+    return NULL;
+  }
+  if(strcmp(subarbol->valor, "AUX") == 0) {
+    return NULL;
   }
 }
 
@@ -960,36 +974,59 @@ int obtenerOperador(char* operador) {
 
   if(strcmp(operador, "/") == 0)
     return OPERACION_DIVISION;
+
+  if(strcmp(operador, ":=") == 0)
+    return OPERADOR_ASIGNACION;
 }
 
 char* escribirAsemblerSuma(tipoNodoArbol* subarbol) {
   struct_tabla_de_simbolos * punteroIzquierdo = buscarEnTablaDeSimbolos(subarbol->hijoIzquierdo->valor);
   struct_tabla_de_simbolos * punteroDerecho = buscarEnTablaDeSimbolos(subarbol->hijoDerecho->valor);
 
-  if(punteroIzquierdo->tipo == VARIABLE_ENTERO || punteroIzquierdo->tipo == CONSTANTE_ENTERO) {
-    printf("Valor izq es: %s\n",subarbol->hijoIzquierdo->valor);
+  int tipoIzquierdoEntero = (punteroIzquierdo->tipo == VARIABLE_ENTERO || punteroIzquierdo->tipo == CONSTANTE_ENTERO);
+  int tipoDerechoEntero = punteroDerecho->tipo == VARIABLE_ENTERO || punteroDerecho->tipo == CONSTANTE_ENTERO;
+
+  if(tipoIzquierdoEntero) {
     assemblerCargarEntero(subarbol->hijoIzquierdo->valor);
+  } else {
+    assemblerCargarReal(subarbol->hijoIzquierdo->valor);
   }
 
-  if(punteroDerecho->tipo == VARIABLE_ENTERO || punteroDerecho->tipo == CONSTANTE_ENTERO) {
-    printf("Valor der es: %s\n",subarbol->hijoDerecho->valor);
+  if(tipoDerechoEntero) {
     assemblerCargarEntero(subarbol->hijoDerecho->valor);
+  } else {
+    assemblerCargarReal(subarbol->hijoDerecho->valor);
   }
 
-  fprintf(archivoAssembler, "FADD\n");
+  sprintf(lineaDeAsssembler, "FADD\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
 
-  return assemblerGuardarResultado();
+  if(tipoIzquierdoEntero && tipoDerechoEntero)
+    return assemblerGuardarResultado(VARIABLE_ENTERO);
+  else
+    return assemblerGuardarResultado(VARIABLE_REAL);
 }
 
 void assemblerCargarEntero(char* valor) {
-  fprintf(archivoAssembler, "FILD %s\n", valor);
+  sprintf(lineaDeAsssembler, "FILD %s\n", valor);
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+void assemblerCargarReal(char* valor) {
+  sprintf(lineaDeAsssembler, "FLD %s\n", valor);
+  agregar(&listaCodigo,lineaDeAsssembler);
 }
 
 char* assemblerGuardarResultado(int tipo) {
   char* variableAuxiliarAssembler = proximaVariableAuxiliarAssembler();
-  guardarIDEnTablaDeSimbolos(variableAuxiliarAssembler, tipo);
-  fprintf(archivoAssembler, "FISTP %s\n", variableAuxiliarAssembler);
-  fprintf(archivoAssembler, "FISTP Descarga\n");
+  variableAuxiliarAssembler = guardarIDEnTablaDeSimbolos(variableAuxiliarAssembler, tipo);
+  if(tipo == VARIABLE_ENTERO)
+    sprintf(lineaDeAsssembler, "FISTP %s\n", variableAuxiliarAssembler);
+  else
+    sprintf(lineaDeAsssembler, "FSTP %s\n", variableAuxiliarAssembler);
+  agregar(&listaCodigo,lineaDeAsssembler);
+  sprintf(lineaDeAsssembler, "FFREE\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
   return variableAuxiliarAssembler;
 }
 
@@ -1001,4 +1038,12 @@ char* proximaVariableAuxiliarAssembler() {
   strcat(nuevaVariableAssembler, numero);
   contadorVariableAssembler++;
   return nuevaVariableAssembler;
+}
+
+void escribirAsemblerAsignacion(tipoNodoArbol* subarbol) {
+  sprintf(lineaDeAsssembler, "MOV eax, %s\n", subarbol->hijoDerecho->valor);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "MOV %s, eax\n", subarbol->hijoIzquierdo->valor);
+  agregar(&listaCodigo,lineaDeAsssembler);
 }

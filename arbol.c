@@ -39,7 +39,10 @@ void setHijoIzquierdo(tipoArbol arbol, tipoNodoArbol* nodo) {
 }
 
 void setValor(tipoArbol arbol, char* valor) {
+    printf("valor previo: %s\n",arbol->valor);
+    printf("parametro: %s\n",valor);
     arbol->valor = valor;
+    printf("nuevo valor: %s\n",valor);
 }
 
 char* getValor(tipoArbol arbol) {
