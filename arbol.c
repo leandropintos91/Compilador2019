@@ -151,3 +151,16 @@ int esOperadorUnario(char* valor) {
 void podarArbol(tipoNodoArbol* arbol) {
     arbol->hijoDerecho = arbol->hijoIzquierdo = NULL;
 }
+
+int contarOperadores(tipoNodoArbol* arbol) {
+   if (arbol->valor == NULL)
+   {
+      return 0;
+   }
+   
+   return contarOperadores(arbol->hijoDerecho) + contarOperadores(arbol->hijoIzquierdo) + esOperadorAlgebraico(arbol->valor);
+}
+
+int esOperadorAlgebraico(char* operador) {
+   return strcmp(operador, "+") == 0 || strcmp(operador, "-") == 0 || strcmp(operador, "*") == 0 || strcmp(operador, "/") == 0;
+}
