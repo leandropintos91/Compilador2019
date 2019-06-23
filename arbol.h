@@ -29,3 +29,5 @@ tipoArbol buscarSubarbolInicioAssembler(tipoArbol arbol);
 void podarArbol(tipoNodoArbol*);
 int contarOperadores(tipoNodoArbol* arbol);
 int esOperadorAlgebraico(char* operador);
+int esSentenciaControl(char*);
+int esOperadorUnario(char*);

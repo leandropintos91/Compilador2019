@@ -39,10 +39,7 @@ void setHijoIzquierdo(tipoArbol arbol, tipoNodoArbol* nodo) {
 }
 
 void setValor(tipoArbol arbol, char* valor) {
-    printf("valor previo: %s\n",arbol->valor);
-    printf("parametro: %s\n",valor);
     arbol->valor = valor;
-    printf("nuevo valor: %s\n",valor);
 }
 
 char* getValor(tipoArbol arbol) {
@@ -85,11 +82,17 @@ void recorrerArbolPreorderConNivel(tipoArbol arbol, int nivel) {
     int i;
     for(i = 0; i < nivel; i++)
         printf("\t");
-    printf("%s\n", arbol->valor);
-    if(arbol->hijoIzquierdo !=  NULL) 
-        recorrerArbolPreorderConNivel(arbol->hijoIzquierdo, nivel +1);
-    if(arbol->hijoDerecho !=  NULL)
-        recorrerArbolPreorderConNivel(arbol->hijoDerecho, nivel +1);
+    if(arbol == NULL) {
+        printf("NULL\n");
+    }
+    else {
+        printf("%s\n", arbol->valor);
+        //if(arbol->hijoIzquierdo !=  NULL) 
+            recorrerArbolPreorderConNivel(arbol->hijoIzquierdo, nivel +1);
+            
+        //if(arbol->hijoDerecho !=  NULL)
+            recorrerArbolPreorderConNivel(arbol->hijoDerecho, nivel +1);
+    }
 }
 
 int tamanioArbol(tipoArbol arbol) {
@@ -118,17 +121,27 @@ void guardarArbolInorder(tipoArbol arbol, FILE *archivo) {
 }
 
 tipoArbol buscarSubarbolInicioAssembler(tipoArbol arbol) {
-    tipoArbol subarbolIzquierdo;
-    tipoArbol subarbolDerecho;
+    tipoArbol subarbolIzquierdo = NULL;
+    tipoArbol subarbolDerecho = NULL;
 
-    if(arbol->hijoIzquierdo == NULL) {
+    if(arbol->hijoIzquierdo == NULL && arbol->hijoDerecho == NULL) {
         return NULL;
     }
 
-    subarbolIzquierdo = buscarSubarbolInicioAssembler(arbol->hijoIzquierdo);
+    if(arbol->hijoIzquierdo != NULL) {
+        subarbolIzquierdo = buscarSubarbolInicioAssembler(arbol->hijoIzquierdo);
+    }
     if(arbol->hijoDerecho != NULL)
     {
         subarbolDerecho = buscarSubarbolInicioAssembler(arbol->hijoDerecho);
+    }
+
+    if(esOperadorUnario(arbol->valor) == 1) {
+        return arbol;
+    }
+
+    if(esSentenciaControl(arbol->valor) == 1) {
+        return arbol;
     }
 
     if(subarbolIzquierdo == NULL && subarbolDerecho == NULL) {
@@ -139,16 +152,18 @@ tipoArbol buscarSubarbolInicioAssembler(tipoArbol arbol) {
         return subarbolIzquierdo;
     }
 
-    if(esOperadorUnario(arbol->valor) == 1) {
-        return arbol;
+    if(subarbolDerecho != NULL) {
+        return subarbolDerecho;
     }
 
-    return subarbolDerecho;
+    return arbol;
 }
 
 int esOperadorUnario(char* valor) {
-    if(strcmp(valor, "ENTRADA") == 0 || strcmp(valor, "SALIDA") == 0 || strcmp(valor, "NOT") == 0)
+    if(strcmp(valor, "ENTRADA") == 0 || strcmp(valor, "SALIDA") == 0 || strcmp(valor, "NOT") == 0) {
         return 1;
+    }
+    return 0;
 }
 
 void podarArbol(tipoNodoArbol* arbol) {
@@ -166,4 +181,12 @@ int contarOperadores(tipoNodoArbol* arbol) {
 
 int esOperadorAlgebraico(char* operador) {
    return strcmp(operador, "+") == 0 || strcmp(operador, "-") == 0 || strcmp(operador, "*") == 0 || strcmp(operador, "/") == 0;
+}
+
+int esSentenciaControl(char* operador) {
+    if(strcmp(operador, "IF") == 0 || strcmp(operador, "WHILE") == 0) {
+        return 1;
+    } else {
+        return 0;
+    }
 }

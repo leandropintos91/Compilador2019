@@ -68,6 +68,9 @@ tipoNodoArbol *Pfib;
 tipoNodoArbol *Paux;
 PilaDeArbol *pilaArbol;
 char lineaDeAsssembler[300];
+int numeroIf = 1;
+int numeroCondicion = 1;
+int numeroComparacion = 1;
 
 void copiarCharEn(char **, char*);
 char* operadorAux;
@@ -92,20 +95,41 @@ char* buscarCadenaEnTablaDeSimbolos(char *valor);
 void apilarListaSentenciasConNodo(tipoNodoArbol *listaSentencias, tipoNodoArbol *sentencia);
 void apilarListaSentencias(tipoNodoArbol *sentencia);
 int obtenerTipo(char*);
+int esCondicionMultiple(tipoNodoArbol*);
+int esCondicionNot(tipoNodoArbol*);
+int esSentenciaControl(char*);
+char* crearEtiqueta(char*,char*);
+int esIfElse(tipoNodoArbol*);
 
 void escribirAsembler();
 void escribirCabecera();
 void escribirTablaDeSimbolos();
 void procesarInicioCodigo();
 void escribirFinal();
-void procesarCodigoIntermedio();
+void procesarCodigoIntermedio(tipoNodoArbol*);
 char* escribirAsemblerDeSubarbol(tipoNodoArbol*);
 int obtenerOperador(char*);
 char* escribirAsemblerSuma(tipoNodoArbol*);
 void assemblerCargarEntero(char*);
 void assemblerCargarReal(char*);
 char* assemblerGuardarResultado();
-char* proximaVariableAuxiliarAssembler();
+char* proximaVariableAuxiliarAssembler(int);
+char* escribirAsemblerSalida(tipoNodoArbol*);
+char* escribirAsemblerEntrada(tipoNodoArbol*);
+char* escribirAsemblerAsignacion(tipoNodoArbol*);
+char* procesarCondicion(tipoNodoArbol*);
+char* procesarCondicionSimple(tipoNodoArbol*);
+char* procesarCondicionCompuesta(char*, char*, char*);
+void procesarComparacion();
+char* procesarComparador(char*);
+void negarCondicion(char*);
+void cargarSimbolo(char*);
+char* escribirAsemblerIf(tipoNodoArbol*);
+void procesarResultadoCondicion(char*);
+void procesarSaltoFinIf(int);
+void procesarFinIf(int);
+void procesarSaltoElse(int numeroIfLocal);
+void procesarElse(int numeroIfLocal);
 
 %}
 
@@ -428,7 +452,7 @@ entrada: OPERADOR_ENTRADA ID
   {
       char* aux = (char*)malloc(sizeof(char*)*50);
       sprintf(aux, "%s\n", yylval.str_val);
-      punteroEntrada = crearNodo("ENTRADA", crearHoja(aux), NULL);
+      punteroEntrada = crearNodo("ENTRADA", crearHoja(crearNombreID(yylval.str_val)), NULL);
     printf("entrada OK\n");
   };
 
@@ -436,7 +460,7 @@ salida: OPERADOR_SALIDA ID
     {
       char* aux = (char*)malloc(sizeof(char*)*50);
       sprintf(aux, "%s\n", yylval.str_val);
-      punteroSalida = crearNodo("SALIDA", crearHoja(aux), NULL);
+      punteroSalida = crearNodo("SALIDA", crearHoja(crearNombreID(yylval.str_val)), NULL);
       printf("salida OK\n");
     } 
   | OPERADOR_SALIDA cadena 
@@ -838,7 +862,7 @@ void escribirAsembler(){
   listaCodigo = crearLista();
 	escribirCabecera();
   procesarInicioCodigo();
-  procesarCodigoIntermedio();
+  procesarCodigoIntermedio(punteroPrograma);
   escribirTablaDeSimbolos();
   escribirLista(listaCodigo,archivoAssembler);
   escribirFinal();
@@ -922,15 +946,36 @@ void escribirFinal(){
   fprintf(archivoAssembler, "\nMOV AH, 1\nINT 21h\nMOV AX, 4C00h\nINT 21h\n\nEND START\n");
 }
 
-void procesarCodigoIntermedio() {
-  tipoNodoArbol* subarbol = buscarSubarbolInicioAssembler(punteroPrograma);
+void procesarCodigoIntermedio(tipoNodoArbol* arbol) {
+  tipoNodoArbol* subarbol = buscarSubarbolInicioAssembler(arbol);
   char* nuevaVariableAuxiliarDeAssembler;
 
   while(subarbol != NULL) {
     nuevaVariableAuxiliarDeAssembler = escribirAsemblerDeSubarbol(subarbol);
     podarArbol(subarbol);
-    setValor(subarbol, nuevaVariableAuxiliarDeAssembler);
-    subarbol = buscarSubarbolInicioAssembler(punteroPrograma);
+    if(nuevaVariableAuxiliarDeAssembler != NULL) {
+      setValor(subarbol, nuevaVariableAuxiliarDeAssembler);
+    }
+    else {
+      if(subarbol->padre != NULL) {
+        if(subarbol->padre->hijoIzquierdo == subarbol) {
+          subarbol->padre->hijoIzquierdo = NULL;
+        }
+        else {
+          subarbol->padre->hijoDerecho = NULL;
+        }
+      }
+    }
+    printf("\n\n\n");
+    subarbol = buscarSubarbolInicioAssembler(arbol);
+    //DEBUG
+    printf("El arbol quedó: \n");
+    recorrerArbolPreorderConNivel(arbol, 0);
+    printf("\n");
+    if(subarbol!= NULL){
+      printf("El nuevo subarbol es: \n");
+      recorrerArbolPreorderConNivel(subarbol, 0);
+    }
   }
 }
 
@@ -951,13 +996,20 @@ char* escribirAsemblerDeSubarbol(tipoNodoArbol* subarbol) {
 
   }
   if(obtenerOperador(subarbol->valor) == OPERADOR_ASIGNACION) {
-    if(subarbol != NULL && subarbol->hijoDerecho != NULL)
-      printf("la variable auxiliar derecha es : %s\n", subarbol->hijoDerecho->valor);
     escribirAsemblerAsignacion(subarbol);
     return NULL;
   }
   if(strcmp(subarbol->valor, "AUX") == 0) {
     return NULL;
+  }
+  if(obtenerOperador(subarbol->valor) == OPERADOR_SALIDA) {
+    return escribirAsemblerSalida(subarbol);
+  }
+  if(obtenerOperador(subarbol->valor) == OPERADOR_ENTRADA) {
+    return escribirAsemblerEntrada(subarbol);
+  }
+  if(obtenerOperador(subarbol->valor) == OPERADOR_IF) {
+    return escribirAsemblerIf(subarbol);
   }
 }
 
@@ -977,6 +1029,34 @@ int obtenerOperador(char* operador) {
 
   if(strcmp(operador, ":=") == 0)
     return OPERADOR_ASIGNACION;
+  if(strcmp(operador, "SALIDA") == 0) {
+    return OPERADOR_SALIDA;
+  }
+  if(strcmp(operador, "ENTRADA") == 0) {
+    return OPERADOR_ENTRADA;
+  }
+  if(strcmp(operador, "IF") == 0) {
+    return OPERADOR_IF;
+  }
+
+  if(strcmp(operador, ">") == 0) {
+    return OPERADOR_MAYOR_A;
+  }
+  if(strcmp(operador, "<") == 0) {
+    return OPERADOR_MENOR_A;
+  }
+  if(strcmp(operador, ">=") == 0) {
+    return OPERADOR_MAYOR_O_IGUAL_A;
+  }
+  if(strcmp(operador, "<=") == 0) {
+    return OPERADOR_MENOR_O_IGUAL_A;
+  }
+  if(strcmp(operador, "=") == 0) {
+    return OPERADOR_IGUAL_A;
+  }
+  if(strcmp(operador, "!=") == 0) {
+    return OPERADOR_DISTINTO_A;
+  }  
 }
 
 char* escribirAsemblerSuma(tipoNodoArbol* subarbol) {
@@ -1018,8 +1098,7 @@ void assemblerCargarReal(char* valor) {
 }
 
 char* assemblerGuardarResultado(int tipo) {
-  char* variableAuxiliarAssembler = proximaVariableAuxiliarAssembler();
-  variableAuxiliarAssembler = guardarIDEnTablaDeSimbolos(variableAuxiliarAssembler, tipo);
+  char* variableAuxiliarAssembler = proximaVariableAuxiliarAssembler(tipo);
   if(tipo == VARIABLE_ENTERO)
     sprintf(lineaDeAsssembler, "FISTP %s\n", variableAuxiliarAssembler);
   else
@@ -1030,20 +1109,287 @@ char* assemblerGuardarResultado(int tipo) {
   return variableAuxiliarAssembler;
 }
 
-char* proximaVariableAuxiliarAssembler() {
+char* proximaVariableAuxiliarAssembler(int tipo) {
   char* nuevaVariableAssembler = (char*)malloc(100);
   char numero[4];
   sprintf(numero,"%d", contadorVariableAssembler);
+  contadorVariableAssembler++;
   strcpy(nuevaVariableAssembler, "@aux");
   strcat(nuevaVariableAssembler, numero);
-  contadorVariableAssembler++;
-  return nuevaVariableAssembler;
+  return guardarIDEnTablaDeSimbolos(nuevaVariableAssembler, tipo);
 }
 
-void escribirAsemblerAsignacion(tipoNodoArbol* subarbol) {
+char* escribirAsemblerAsignacion(tipoNodoArbol* subarbol) {
   sprintf(lineaDeAsssembler, "MOV eax, %s\n", subarbol->hijoDerecho->valor);
   agregar(&listaCodigo,lineaDeAsssembler);
 
   sprintf(lineaDeAsssembler, "MOV %s, eax\n", subarbol->hijoIzquierdo->valor);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  return NULL;
+}
+
+char* escribirAsemblerSalida(tipoNodoArbol* subarbol) {
+  int tipo = buscarEnTablaDeSimbolos(subarbol->hijoIzquierdo->valor)->tipo;
+  switch(tipo) {
+    case CONSTANTE_CADENA:
+      sprintf(lineaDeAsssembler, "displayString %s\n", subarbol->hijoIzquierdo->valor);
+      agregar(&listaCodigo,lineaDeAsssembler);
+      break;
+
+    case VARIABLE_CADENA:
+      sprintf(lineaDeAsssembler, "displayString %s\n", subarbol->hijoIzquierdo->valor);
+      agregar(&listaCodigo,lineaDeAsssembler);
+      break;
+
+    case VARIABLE_ENTERO:
+      sprintf(lineaDeAsssembler, "DisplayInteger %s\n", subarbol->hijoIzquierdo->valor);
+      agregar(&listaCodigo,lineaDeAsssembler);
+      break;
+
+    case VARIABLE_REAL:
+      sprintf(lineaDeAsssembler, "DisplayFloat %s\n", subarbol->hijoIzquierdo->valor);
+      agregar(&listaCodigo,lineaDeAsssembler);
+      break;
+    default:
+      break;
+  }
+
+  sprintf(lineaDeAsssembler, "newLine 1\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
+  
+  return NULL;
+}
+
+char* escribirAsemblerEntrada(tipoNodoArbol* subarbol) {
+  //DEBUG
+  printf("Escribo subarbol assembler\n");
+  int tipo = buscarEnTablaDeSimbolos(subarbol->hijoIzquierdo->valor)->tipo;
+  switch(tipo) {
+    case VARIABLE_CADENA:
+      sprintf(lineaDeAsssembler, "GetString %s\n", subarbol->hijoIzquierdo->valor);
+      break;
+
+    case VARIABLE_ENTERO:
+      sprintf(lineaDeAsssembler, "GetInteger %s\n", subarbol->hijoIzquierdo->valor);
+      break;
+
+    case VARIABLE_REAL:
+      sprintf(lineaDeAsssembler, "GetFloat %s\n", subarbol->hijoIzquierdo->valor);
+      break;
+    default:
+      break;
+  }
+  agregar(&listaCodigo,lineaDeAsssembler);
+  return NULL;
+}
+
+char* escribirAsemblerIf(tipoNodoArbol* subarbol) {
+  char* variableResultadoCondicion = procesarCondicion(subarbol->hijoIzquierdo);
+  int numeroIfLocal = numeroIf;
+  //verificar si dio falso
+  procesarResultadoCondicion(variableResultadoCondicion);
+  if(esIfElse(subarbol)) {
+    procesarSaltoElse(numeroIfLocal);
+    procesarCodigoIntermedio(subarbol->hijoDerecho->hijoIzquierdo);
+    procesarSaltoFinIf(numeroIfLocal);
+    procesarElse(numeroIfLocal);
+    procesarCodigoIntermedio(subarbol->hijoDerecho->hijoDerecho);
+  } else {
+    procesarSaltoFinIf(numeroIfLocal);
+    procesarCodigoIntermedio(subarbol->hijoDerecho);
+  }
+  procesarFinIf(numeroIfLocal);
+  numeroIf++;
+  return NULL;
+}
+
+char* procesarCondicion(tipoNodoArbol* subarbol) {
+  char* variableCondicionIzquierda = NULL;
+  char* variableCondicionDerecha = NULL;
+  int numeroCondicionLocal = numeroCondicion;
+  if(esCondicionMultiple(subarbol)) {
+    variableCondicionIzquierda = procesarCondicionSimple(subarbol->hijoIzquierdo);
+    variableCondicionDerecha = procesarCondicionSimple(subarbol->hijoDerecho);
+    return procesarCondicionCompuesta(subarbol->valor,variableCondicionIzquierda, variableCondicionDerecha);
+  } else if(esCondicionNot(subarbol)) {
+    variableCondicionIzquierda = procesarCondicionSimple(subarbol->hijoIzquierdo);
+    negarCondicion(variableCondicionIzquierda);
+    return variableCondicionIzquierda;
+  } else {
+    return procesarCondicionSimple(subarbol);
+  }
+}
+
+int esCondicionMultiple(tipoNodoArbol* subarbol) {
+  if(strcmp(subarbol->valor, "AND") == 0 || strcmp(subarbol->valor, "OR") == 0) {
+    return 1;
+  }
+  return 0;
+}
+
+int esCondicionNot(tipoNodoArbol* subarbol) {
+  return strcmp(subarbol->valor, "NOT") == 0;
+}
+
+char* procesarCondicionSimple(tipoNodoArbol* subarbol) {
+  cargarSimbolo(subarbol->hijoIzquierdo->valor);
+  cargarSimbolo(subarbol->hijoDerecho->valor);
+  procesarComparacion(); //esta es la parte hardcodeada
+  return procesarComparador(subarbol->valor);
+}
+
+void cargarSimbolo(char* simbolo) {
+  //TODO refactorizar esto, es muy parecido a assembler suma y lo vamos a necesitar para multiplicacio y division
+  struct_tabla_de_simbolos * punteroTablaDeSimbolo = buscarEnTablaDeSimbolos(simbolo);
+
+  int tipoEntero = (punteroTablaDeSimbolo->tipo == VARIABLE_ENTERO || punteroTablaDeSimbolo->tipo == CONSTANTE_ENTERO);
+
+  if(tipoEntero) {
+    assemblerCargarEntero(simbolo);
+  } else {
+    assemblerCargarReal(simbolo);
+  }
+}
+
+void procesarComparacion() {
+  sprintf(lineaDeAsssembler, "FXCH\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "FCOMP\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "FFREE St(0)\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "fstsw ax\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "sahf\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+char* procesarComparador(char* comparador) {
+  int numeroComparacionLocal = numeroComparacion;
+  char charComparacionLocal[10];
+  itoa(numeroComparacionLocal, charComparacionLocal,10);
+  char* variableAuxiliar = proximaVariableAuxiliarAssembler(VARIABLE_ENTERO);
+  char salto[5];
+
+  if(obtenerOperador(comparador) == OPERADOR_MAYOR_A) {
+    strcpy(salto, "JA");
+  }
+  if(obtenerOperador(comparador) == OPERADOR_MENOR_A) {
+    strcpy(salto, "JB");
+  }
+  if(obtenerOperador(comparador) == OPERADOR_MAYOR_O_IGUAL_A) {
+    strcpy(salto, "JAE");
+  }
+  if(obtenerOperador(comparador) == OPERADOR_MENOR_O_IGUAL_A) {
+    strcpy(salto, "JBE");
+  }
+  if(obtenerOperador(comparador) == OPERADOR_IGUAL_A) {
+    strcpy(salto, "JE");
+  }
+  if(obtenerOperador(comparador) == OPERADOR_DISTINTO_A) {
+    strcpy(salto, "JNE");
+  }
+
+
+
+  sprintf(lineaDeAsssembler, "%s %s\n", salto, crearEtiqueta("ETIQUETA_CONDICION_VERDADERA_",charComparacionLocal));
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "MOV %s, 0\n", variableAuxiliar);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "JMP %s\n", crearEtiqueta("ETIQUETA_FIN_CONDICION_",charComparacionLocal));
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "%s:\n", crearEtiqueta("ETIQUETA_CONDICION_VERDADERA_",charComparacionLocal));
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "MOV %s, 1\n", variableAuxiliar);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "%s:\n", crearEtiqueta("ETIQUETA_FIN_CONDICION_",charComparacionLocal));
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  numeroComparacion++;
+  return variableAuxiliar;
+}
+
+char* procesarCondicionCompuesta(char* comparador, char* resultado1, char* resultado2) {
+  char* variableResultado = proximaVariableAuxiliarAssembler(VARIABLE_ENTERO);
+
+  sprintf(lineaDeAsssembler, "MOV eax, %s\n", resultado1);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "%s eax, %s\n", comparador, resultado2);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "MOV %s, eax\n", variableResultado);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  return variableResultado;
+}
+
+void negarCondicion(char* resultado) {
+  //TODO
+}
+
+char* crearEtiqueta(char* etiqueta, char* numero) {
+  char* texto = (char*)malloc(100);
+  strcpy(texto, etiqueta);
+  strcat(texto, numero);
+  return texto;
+}
+
+void procesarResultadoCondicion(char* variableResultado) {
+  sprintf(lineaDeAsssembler, "MOV eax, %s\n", variableResultado);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "CMP eax, 0\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+void procesarSaltoFinIf(int numeroIfLocal) {
+  char numeroSalto[10];
+  itoa(numeroIfLocal, numeroSalto, 10);
+
+  sprintf(lineaDeAsssembler, "JE %s\n", crearEtiqueta("FIN_IF_", numeroSalto));
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+void procesarFinIf(int numeroIfLocal) {
+  char numeroSalto[10];
+  itoa(numeroIfLocal, numeroSalto, 10);
+
+  sprintf(lineaDeAsssembler, "%s:\n", crearEtiqueta("FIN_IF_", numeroSalto));
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+int esIfElse(tipoNodoArbol* subarbol) {
+  printf("Holiz\n");
+  if(strcmp(subarbol->hijoDerecho->valor, "CUERPO_IF") == 0) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+void procesarSaltoElse(int numeroIfLocal) {
+  char numeroSalto[10];
+  itoa(numeroIfLocal, numeroSalto, 10);
+
+  sprintf(lineaDeAsssembler, "JE %s\n", crearEtiqueta("ELSE_", numeroSalto));
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+void procesarElse(int numeroIfLocal) {
+  char numeroSalto[10];
+  itoa(numeroIfLocal, numeroSalto, 10);
+
+  sprintf(lineaDeAsssembler, "%s:\n", crearEtiqueta("ELSE_", numeroSalto));
   agregar(&listaCodigo,lineaDeAsssembler);
 }
