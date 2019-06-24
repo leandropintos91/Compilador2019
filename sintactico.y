@@ -71,6 +71,7 @@ char lineaDeAsssembler[300];
 int numeroIf = 1;
 int numeroCondicion = 1;
 int numeroComparacion = 1;
+int numeroWhile = 1;
 
 void copiarCharEn(char **, char*);
 char* operadorAux;
@@ -130,6 +131,11 @@ void procesarSaltoFinIf(int);
 void procesarFinIf(int);
 void procesarSaltoElse(int numeroIfLocal);
 void procesarElse(int numeroIfLocal);
+char* escribirAsemblerWhile(tipoNodoArbol* subarbol);
+void procesarSaltoFinWhile(int numeroIfLocal);
+void procesarFinWhile(int numeroIfLocal);
+void procesarEtiquetaWhile(char* charNumeroWhileLocal);
+void procesarSaltoWhile(char* charNumeroWhileLocal);
 
 %}
 
@@ -1011,6 +1017,9 @@ char* escribirAsemblerDeSubarbol(tipoNodoArbol* subarbol) {
   if(obtenerOperador(subarbol->valor) == OPERADOR_IF) {
     return escribirAsemblerIf(subarbol);
   }
+  if(obtenerOperador(subarbol->valor) == WHILE) {
+    return escribirAsemblerWhile(subarbol);
+  }
 }
 
 int obtenerOperador(char* operador) {
@@ -1056,6 +1065,9 @@ int obtenerOperador(char* operador) {
   }
   if(strcmp(operador, "!=") == 0) {
     return OPERADOR_DISTINTO_A;
+  } 
+  if(strcmp(operador, "WHILE") == 0) {
+    return WHILE;
   }  
 }
 
@@ -1391,5 +1403,47 @@ void procesarElse(int numeroIfLocal) {
   itoa(numeroIfLocal, numeroSalto, 10);
 
   sprintf(lineaDeAsssembler, "%s:\n", crearEtiqueta("ELSE_", numeroSalto));
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+char* escribirAsemblerWhile(tipoNodoArbol* subarbol) {
+  int numeroWhileLocal = numeroWhile;
+  char charNumeroWhileLocal[5];
+  itoa(numeroWhileLocal, charNumeroWhileLocal, 10);
+
+  procesarEtiquetaWhile(charNumeroWhileLocal);
+  char* variableResultadoCondicion = procesarCondicion(subarbol->hijoIzquierdo);
+  procesarResultadoCondicion(variableResultadoCondicion);
+  procesarSaltoFinWhile(numeroWhileLocal);
+  procesarCodigoIntermedio(subarbol->hijoDerecho);
+  procesarSaltoWhile(charNumeroWhileLocal);
+  procesarFinWhile(numeroWhileLocal);
+  numeroWhile++;
+  return NULL;
+}
+
+void procesarSaltoFinWhile(int numeroIfLocal) {
+  char numeroSalto[10];
+  itoa(numeroIfLocal, numeroSalto, 10);
+
+  sprintf(lineaDeAsssembler, "JE %s\n", crearEtiqueta("FIN_WHILE_", numeroSalto));
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+void procesarFinWhile(int numeroIfLocal) {
+  char numeroSalto[10];
+  itoa(numeroIfLocal, numeroSalto, 10);
+
+  sprintf(lineaDeAsssembler, "%s:\n", crearEtiqueta("FIN_WHILE_", numeroSalto));
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+void procesarEtiquetaWhile(char* charNumeroWhileLocal) {
+  sprintf(lineaDeAsssembler, "%s:\n", crearEtiqueta("WHILE_", charNumeroWhileLocal));
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+void procesarSaltoWhile(char* charNumeroWhileLocal) {
+  sprintf(lineaDeAsssembler, "JMP %s\n", crearEtiqueta("WHILE_", charNumeroWhileLocal));
   agregar(&listaCodigo,lineaDeAsssembler);
 }
