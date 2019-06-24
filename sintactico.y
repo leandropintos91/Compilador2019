@@ -72,6 +72,7 @@ int numeroIf = 1;
 int numeroCondicion = 1;
 int numeroComparacion = 1;
 int numeroWhile = 1;
+char* variableResultadoFibonacci;
 
 void copiarCharEn(char **, char*);
 char* operadorAux;
@@ -144,6 +145,7 @@ char* procesarExpresion(tipoNodoArbol*);
 void autoeliminarHijo(tipoNodoArbol*);
 void preguntarPorFalso(char*);
 void procesarSaltoFinCicloEspecial(int);
+char* escribirAsemblerFibonacci(tipoNodoArbol*);
 
 %}
 
@@ -310,10 +312,8 @@ sentencia:
 
 fibonacci: FIBONACCI PARENTESIS_ABIERTO ENTERO 
   { 
-      printf("yylval: %d\n",yylval.int_val);
       numeroFibonacci = (char*)malloc(sizeof(char*)*6);
-      sprintf(numeroFibonacci,"%d\n",yylval.int_val);
-      printf("numeroFibonacci: %s\n", numeroFibonacci);
+      numeroFibonacci = guardarEnteroEnTablaDeSimbolos(yylval.int_val);
   } PARENTESIS_CERRADO 
   {
     crearArbolFibonacci();
@@ -772,48 +772,53 @@ void crearArbolFibonacci() {
   tipoNodoArbol* hijoDerecho;
   tipoNodoArbol* hijoIzquierdo;
 
+  char* variableI = guardarIDEnTablaDeSimbolos("@i", VARIABLE_ENTERO);
+  variableResultadoFibonacci = guardarIDEnTablaDeSimbolos("@resultadoFibonacci", VARIABLE_ENTERO);
+  char* variableSuma = guardarIDEnTablaDeSimbolos("@suma", VARIABLE_ENTERO);
+  char* variableAnt = guardarIDEnTablaDeSimbolos("@ant", VARIABLE_ENTERO);
 
 
-  Paux = crearNodo("+",crearHoja("i"),crearHoja("1"));
-  Paux = crearNodo("=",crearHoja("i"),Paux);
+
+  Paux = crearNodo("+",crearHoja(variableI),crearHoja(guardarEnteroEnTablaDeSimbolos(1)));
+  Paux = crearNodo(":=",crearHoja(variableI),Paux);
   apilarArbol(pilaArbol, Paux);
-  Paux = crearNodo("=",crearHoja("acum"),crearHoja("suma"));
+  Paux = crearNodo(":=",crearHoja(variableResultadoFibonacci),crearHoja(variableSuma));
   apilarArbol(pilaArbol, Paux);
-  Paux = crearNodo("=",crearHoja("ant"),crearHoja("acum"));
+  Paux = crearNodo(":=",crearHoja(variableAnt),crearHoja(variableResultadoFibonacci));
   apilarArbol(pilaArbol, Paux);
   hijoIzquierdo = desapilarArbol(pilaArbol);
   hijoDerecho = desapilarArbol(pilaArbol);
   Paux = crearNodo("AUX",hijoIzquierdo,hijoDerecho);
   apilarArbol(pilaArbol, Paux);
-  Paux = crearNodo("+",crearHoja("acum"),crearHoja("ant"));
-  Paux = crearNodo("=",crearHoja("suma"),Paux);
+  Paux = crearNodo("+",crearHoja(variableResultadoFibonacci),crearHoja(variableAnt));
+  Paux = crearNodo(":=",crearHoja(variableSuma),Paux);
   apilarArbol(pilaArbol, Paux);
   hijoIzquierdo = desapilarArbol(pilaArbol);
   hijoDerecho = desapilarArbol(pilaArbol);
   Paux = crearNodo("AUX",hijoIzquierdo,hijoDerecho);
   apilarArbol(pilaArbol, Paux);
-  Paux = crearNodo("=",crearHoja("acum"),crearHoja("1"));
+  Paux = crearNodo(":=",crearHoja(variableResultadoFibonacci),crearHoja(guardarEnteroEnTablaDeSimbolos(1)));
   apilarArbol(pilaArbol, Paux);
 
   hijoIzquierdo = desapilarArbol(pilaArbol);
   hijoDerecho = desapilarArbol(pilaArbol);
   Paux = crearNodo("CUERPO_IF",hijoIzquierdo,hijoDerecho);
   apilarArbol(pilaArbol, Paux);
-  Paux = crearNodo("==",crearHoja("i"),crearHoja("2"));
+  Paux = crearNodo("=",crearHoja(variableI),crearHoja(guardarEnteroEnTablaDeSimbolos(2)));
   apilarArbol(pilaArbol, Paux);
 
   hijoIzquierdo = desapilarArbol(pilaArbol);
   hijoDerecho = desapilarArbol(pilaArbol);
   Paux = crearNodo("IF",hijoIzquierdo,hijoDerecho);
   apilarArbol(pilaArbol, Paux);
-  Paux = crearNodo("=",crearHoja("acum"),crearHoja("0"));
+  Paux = crearNodo(":=",crearHoja(variableResultadoFibonacci),crearHoja(guardarEnteroEnTablaDeSimbolos(0)));
   apilarArbol(pilaArbol, Paux);
 
   hijoIzquierdo = desapilarArbol(pilaArbol);
   hijoDerecho = desapilarArbol(pilaArbol);
   Paux = crearNodo("CUERPO_IF",hijoIzquierdo,hijoDerecho);
   apilarArbol(pilaArbol, Paux);
-  Paux = crearNodo("==",crearHoja("i"),crearHoja("1"));
+  Paux = crearNodo("=",crearHoja(variableI),crearHoja(guardarEnteroEnTablaDeSimbolos(1)));
   apilarArbol(pilaArbol, Paux);
 
   hijoIzquierdo = desapilarArbol(pilaArbol);
@@ -825,23 +830,23 @@ void crearArbolFibonacci() {
   hijoDerecho = desapilarArbol(pilaArbol);
   Paux = crearNodo("AUX",hijoIzquierdo,hijoDerecho);
   apilarArbol(pilaArbol, Paux);
-  Paux = crearNodo("<=",crearHoja("i"),crearHoja(numeroFibonacci));
+  Paux = crearNodo("<=",crearHoja(variableI),crearHoja(numeroFibonacci));
   apilarArbol(pilaArbol, Paux);
 
   hijoIzquierdo = desapilarArbol(pilaArbol);
   hijoDerecho = desapilarArbol(pilaArbol);
   Paux = crearNodo("WHILE",hijoIzquierdo,hijoDerecho);
   apilarArbol(pilaArbol, Paux);
-  Paux = crearNodo("=",crearHoja("i"),crearHoja("0"));
+  Paux = crearNodo(":=",crearHoja(variableI),crearHoja(guardarEnteroEnTablaDeSimbolos(0)));
   apilarArbol(pilaArbol, Paux);
 
   hijoIzquierdo = desapilarArbol(pilaArbol);
   hijoDerecho = desapilarArbol(pilaArbol);
-  Paux = crearNodo("FOR",hijoIzquierdo,hijoDerecho);
+  Paux = crearNodo("AUX",hijoIzquierdo,hijoDerecho);
   apilarArbol(pilaArbol, Paux);
-  Paux = crearNodo("=",crearHoja("acum"),crearHoja("0"));
+  Paux = crearNodo(":=",crearHoja(variableResultadoFibonacci),crearHoja(guardarEnteroEnTablaDeSimbolos(0)));
   apilarArbol(pilaArbol, Paux);
-  Paux = crearNodo("=",crearHoja("ant"),crearHoja("0"));
+  Paux = crearNodo(":=",crearHoja(variableAnt),crearHoja(guardarEnteroEnTablaDeSimbolos(0)));
   apilarArbol(pilaArbol, Paux);
 
   hijoIzquierdo = desapilarArbol(pilaArbol);
@@ -1022,6 +1027,9 @@ char* escribirAsemblerDeSubarbol(tipoNodoArbol* subarbol) {
   if(obtenerOperador(subarbol->valor) == LISTA_EXPRESION) {
     return procesarExpresion(subarbol);
   }
+  if(obtenerOperador(subarbol->valor) == FIBONACCI) {
+    return escribirAsemblerFibonacci(subarbol);
+  }
 }
 
 int obtenerOperador(char* operador) {
@@ -1073,6 +1081,9 @@ int obtenerOperador(char* operador) {
   } 
   if(strcmp(operador, "LISTA_EXPRESION") == 0) {
     return LISTA_EXPRESION;
+  }
+  if(strcmp(operador, "FIB") == 0) {
+    return FIBONACCI;
   }
   return -1;
 }
@@ -1205,6 +1216,7 @@ char* escribirAsemblerEntrada(tipoNodoArbol* subarbol) {
 char* escribirAsemblerIf(tipoNodoArbol* subarbol) {
   char* variableResultadoCondicion = procesarCondicion(subarbol->hijoIzquierdo);
   int numeroIfLocal = numeroIf;
+  numeroIf++;
   //verificar si dio falso
   procesarResultadoCondicion(variableResultadoCondicion);
   if(esIfElse(subarbol)) {
@@ -1218,7 +1230,6 @@ char* escribirAsemblerIf(tipoNodoArbol* subarbol) {
     procesarCodigoIntermedio(subarbol->hijoDerecho);
   }
   procesarFinIf(numeroIfLocal);
-  numeroIf++;
   return NULL;
 }
 
@@ -1226,6 +1237,7 @@ char* procesarCondicion(tipoNodoArbol* subarbol) {
   char* variableCondicionIzquierda = NULL;
   char* variableCondicionDerecha = NULL;
   int numeroCondicionLocal = numeroCondicion;
+  numeroCondicion++;
   if(esCondicionMultiple(subarbol)) {
     variableCondicionIzquierda = procesarCondicionSimple(subarbol->hijoIzquierdo);
     variableCondicionDerecha = procesarCondicionSimple(subarbol->hijoDerecho);
@@ -1289,6 +1301,7 @@ void procesarComparacion() {
 
 char* procesarComparador(char* comparador) {
   int numeroComparacionLocal = numeroComparacion;
+  numeroComparacion++;
   char charComparacionLocal[10];
   itoa(numeroComparacionLocal, charComparacionLocal,10);
   char* variableAuxiliar = proximaVariableAuxiliarAssembler(VARIABLE_ENTERO);
@@ -1333,7 +1346,6 @@ char* procesarComparador(char* comparador) {
   sprintf(lineaDeAsssembler, "%s:\n", crearEtiqueta("ETIQUETA_FIN_CONDICION_",charComparacionLocal));
   agregar(&listaCodigo,lineaDeAsssembler);
 
-  numeroComparacion++;
   return variableAuxiliar;
 }
 
@@ -1422,6 +1434,7 @@ void procesarElse(int numeroIfLocal) {
 char* escribirAsemblerWhile(tipoNodoArbol* subarbol) {
   char* variableResultadoCondicion = NULL;
   int numeroWhileLocal = numeroWhile;
+  numeroWhile++;
   char charNumeroWhileLocal[5];
   itoa(numeroWhileLocal, charNumeroWhileLocal, 10);
   int esCicloEspecial = strcmp(subarbol->hijoIzquierdo->valor, "IN") == 0;
@@ -1440,7 +1453,6 @@ char* escribirAsemblerWhile(tipoNodoArbol* subarbol) {
   procesarCodigoIntermedio(subarbol->hijoDerecho);
   procesarSaltoWhile(charNumeroWhileLocal);
   procesarFinWhile(numeroWhileLocal);
-  numeroWhile++;
   return NULL;
 }
 
@@ -1528,4 +1540,10 @@ void autoeliminarHijo(tipoNodoArbol* subarbol) {
       subarbol->padre->hijoDerecho = NULL;
     }
   }
+}
+
+char* escribirAsemblerFibonacci(tipoNodoArbol* subarbol) {
+  procesarCodigoIntermedio(subarbol->hijoIzquierdo);
+  procesarCodigoIntermedio(subarbol->hijoDerecho);
+  return variableResultadoFibonacci;
 }
