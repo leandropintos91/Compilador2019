@@ -190,3 +190,34 @@ int esSentenciaControl(char* operador) {
         return 0;
     }
 }
+
+tipoNodoArbol* obtenerSiguienteExpresionDeLista(tipoNodoArbol* arbol) {
+    tipoNodoArbol* resultadoIzquierdo = NULL;
+    tipoNodoArbol* resultadoDerecho = NULL;
+
+    printf("El valor es: %s\n", arbol->valor);
+
+    if(esListaExpresion(arbol->valor)) {
+        if(arbol->hijoIzquierdo != NULL) {
+            resultadoIzquierdo = obtenerSiguienteExpresionDeLista(arbol->hijoIzquierdo);
+            if(resultadoIzquierdo != NULL) {
+                return resultadoIzquierdo;
+            }
+        }
+        if(arbol->hijoDerecho != NULL) {
+            resultadoDerecho = obtenerSiguienteExpresionDeLista(arbol->hijoDerecho);
+            if(resultadoDerecho != NULL) {
+                return resultadoDerecho;
+            }
+        }
+        return NULL;
+    } else {
+        return arbol;
+    }
+    
+
+}
+
+int esListaExpresion(char* operador) {
+   return strcmp(operador, "LISTA_EXPRESION") == 0;
+}

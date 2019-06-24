@@ -31,3 +31,5 @@ int contarOperadores(tipoNodoArbol* arbol);
 int esOperadorAlgebraico(char* operador);
 int esSentenciaControl(char*);
 int esOperadorUnario(char*);
+tipoNodoArbol* obtenerSiguienteExpresionDeLista(tipoNodoArbol*);
+int esListaExpresion(char*);

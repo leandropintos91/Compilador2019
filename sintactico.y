@@ -107,7 +107,7 @@ void escribirCabecera();
 void escribirTablaDeSimbolos();
 void procesarInicioCodigo();
 void escribirFinal();
-void procesarCodigoIntermedio(tipoNodoArbol*);
+char* procesarCodigoIntermedio(tipoNodoArbol*);
 char* escribirAsemblerDeSubarbol(tipoNodoArbol*);
 int obtenerOperador(char*);
 char* escribirAsemblerSuma(tipoNodoArbol*);
@@ -129,13 +129,21 @@ char* escribirAsemblerIf(tipoNodoArbol*);
 void procesarResultadoCondicion(char*);
 void procesarSaltoFinIf(int);
 void procesarFinIf(int);
-void procesarSaltoElse(int numeroIfLocal);
-void procesarElse(int numeroIfLocal);
-char* escribirAsemblerWhile(tipoNodoArbol* subarbol);
-void procesarSaltoFinWhile(int numeroIfLocal);
-void procesarFinWhile(int numeroIfLocal);
-void procesarEtiquetaWhile(char* charNumeroWhileLocal);
-void procesarSaltoWhile(char* charNumeroWhileLocal);
+void procesarSaltoElse(int);
+void procesarElse(int);
+char* escribirAsemblerWhile(tipoNodoArbol*);
+void procesarSaltoFinWhile(int);
+void procesarFinWhile(int);
+void procesarEtiquetaWhile(char*);
+void procesarSaltoWhile(char*);
+char* procesarAsemblerDelSubarbolMasALaIzquierda(tipoNodoArbol*);
+char* procesarAsemblerIn(tipoNodoArbol*, char*);
+void procesarSaltoCondicionVerdaderaWhile(char*);
+void procesarEtiquetaCondicionVerdaderaWhile(char*);
+char* procesarExpresion(tipoNodoArbol*);
+void autoeliminarHijo(tipoNodoArbol*);
+void preguntarPorFalso(char*);
+void procesarSaltoFinCicloEspecial(int);
 
 %}
 
@@ -241,7 +249,8 @@ tipo_variable:
 
 ciclo_especial: WHILE ID 
   {
-    punteroId = crearHoja(yylval.str_val);
+    copiarCharEn(&idAux, crearNombreID(yylval.str_val));
+    punteroId = crearHoja(idAux);
   } IN lista_expresiones 
   {
     punteroIn = crearNodo("IN", punteroId, punteroListaExpresiones);
@@ -952,37 +961,27 @@ void escribirFinal(){
   fprintf(archivoAssembler, "\nMOV AH, 1\nINT 21h\nMOV AX, 4C00h\nINT 21h\n\nEND START\n");
 }
 
-void procesarCodigoIntermedio(tipoNodoArbol* arbol) {
+char* procesarCodigoIntermedio(tipoNodoArbol* arbol) {
   tipoNodoArbol* subarbol = buscarSubarbolInicioAssembler(arbol);
   char* nuevaVariableAuxiliarDeAssembler;
 
   while(subarbol != NULL) {
-    nuevaVariableAuxiliarDeAssembler = escribirAsemblerDeSubarbol(subarbol);
+    nuevaVariableAuxiliarDeAssembler = procesarAsemblerDelSubarbolMasALaIzquierda(subarbol);
+    subarbol = buscarSubarbolInicioAssembler(arbol);
+  }
+  return nuevaVariableAuxiliarDeAssembler;
+}
+
+char* procesarAsemblerDelSubarbolMasALaIzquierda(tipoNodoArbol* subarbol) {
+    char* nuevaVariableAuxiliarDeAssembler = escribirAsemblerDeSubarbol(subarbol);
     podarArbol(subarbol);
     if(nuevaVariableAuxiliarDeAssembler != NULL) {
       setValor(subarbol, nuevaVariableAuxiliarDeAssembler);
     }
     else {
-      if(subarbol->padre != NULL) {
-        if(subarbol->padre->hijoIzquierdo == subarbol) {
-          subarbol->padre->hijoIzquierdo = NULL;
-        }
-        else {
-          subarbol->padre->hijoDerecho = NULL;
-        }
-      }
+      autoeliminarHijo(subarbol);
     }
-    printf("\n\n\n");
-    subarbol = buscarSubarbolInicioAssembler(arbol);
-    //DEBUG
-    printf("El arbol quedó: \n");
-    recorrerArbolPreorderConNivel(arbol, 0);
-    printf("\n");
-    if(subarbol!= NULL){
-      printf("El nuevo subarbol es: \n");
-      recorrerArbolPreorderConNivel(subarbol, 0);
-    }
-  }
+    return nuevaVariableAuxiliarDeAssembler;
 }
 
 char* escribirAsemblerDeSubarbol(tipoNodoArbol* subarbol) {
@@ -1019,6 +1018,9 @@ char* escribirAsemblerDeSubarbol(tipoNodoArbol* subarbol) {
   }
   if(obtenerOperador(subarbol->valor) == WHILE) {
     return escribirAsemblerWhile(subarbol);
+  }
+  if(obtenerOperador(subarbol->valor) == LISTA_EXPRESION) {
+    return procesarExpresion(subarbol);
   }
 }
 
@@ -1068,7 +1070,11 @@ int obtenerOperador(char* operador) {
   } 
   if(strcmp(operador, "WHILE") == 0) {
     return WHILE;
-  }  
+  } 
+  if(strcmp(operador, "LISTA_EXPRESION") == 0) {
+    return LISTA_EXPRESION;
+  }
+  return -1;
 }
 
 char* escribirAsemblerSuma(tipoNodoArbol* subarbol) {
@@ -1365,6 +1371,14 @@ void procesarResultadoCondicion(char* variableResultado) {
   agregar(&listaCodigo,lineaDeAsssembler);
 }
 
+void preguntarPorFalso(char* variableResultado) {
+  sprintf(lineaDeAsssembler, "MOV eax, %s\n", variableResultado);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "CMP eax, 1\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
 void procesarSaltoFinIf(int numeroIfLocal) {
   char numeroSalto[10];
   itoa(numeroIfLocal, numeroSalto, 10);
@@ -1382,7 +1396,6 @@ void procesarFinIf(int numeroIfLocal) {
 }
 
 int esIfElse(tipoNodoArbol* subarbol) {
-  printf("Holiz\n");
   if(strcmp(subarbol->hijoDerecho->valor, "CUERPO_IF") == 0) {
     return 1;
   } else {
@@ -1407,14 +1420,23 @@ void procesarElse(int numeroIfLocal) {
 }
 
 char* escribirAsemblerWhile(tipoNodoArbol* subarbol) {
+  char* variableResultadoCondicion = NULL;
   int numeroWhileLocal = numeroWhile;
   char charNumeroWhileLocal[5];
   itoa(numeroWhileLocal, charNumeroWhileLocal, 10);
+  int esCicloEspecial = strcmp(subarbol->hijoIzquierdo->valor, "IN") == 0;
 
   procesarEtiquetaWhile(charNumeroWhileLocal);
-  char* variableResultadoCondicion = procesarCondicion(subarbol->hijoIzquierdo);
-  procesarResultadoCondicion(variableResultadoCondicion);
-  procesarSaltoFinWhile(numeroWhileLocal);
+  //TODO refactorizar, uno pregunta por V y otro por F, debería ser homogéneo.
+  if(!esCicloEspecial) {
+    variableResultadoCondicion = procesarCondicion(subarbol->hijoIzquierdo);
+    procesarResultadoCondicion(variableResultadoCondicion); //solo hace la comparación, pregunta por falso
+    procesarSaltoFinWhile(numeroWhileLocal);
+  } else {
+    variableResultadoCondicion= procesarAsemblerIn(subarbol->hijoIzquierdo, charNumeroWhileLocal);
+    procesarSaltoFinCicloEspecial(numeroWhileLocal);
+  }
+  procesarEtiquetaCondicionVerdaderaWhile(charNumeroWhileLocal);
   procesarCodigoIntermedio(subarbol->hijoDerecho);
   procesarSaltoWhile(charNumeroWhileLocal);
   procesarFinWhile(numeroWhileLocal);
@@ -1427,6 +1449,15 @@ void procesarSaltoFinWhile(int numeroIfLocal) {
   itoa(numeroIfLocal, numeroSalto, 10);
 
   sprintf(lineaDeAsssembler, "JE %s\n", crearEtiqueta("FIN_WHILE_", numeroSalto));
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+void procesarSaltoFinCicloEspecial(int numeroIfLocal) {
+  //TODO se puede refactorizar
+  char numeroSalto[10];
+  itoa(numeroIfLocal, numeroSalto, 10);
+
+  sprintf(lineaDeAsssembler, "JMP %s\n", crearEtiqueta("FIN_WHILE_", numeroSalto));
   agregar(&listaCodigo,lineaDeAsssembler);
 }
 
@@ -1446,4 +1477,55 @@ void procesarEtiquetaWhile(char* charNumeroWhileLocal) {
 void procesarSaltoWhile(char* charNumeroWhileLocal) {
   sprintf(lineaDeAsssembler, "JMP %s\n", crearEtiqueta("WHILE_", charNumeroWhileLocal));
   agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+char* procesarAsemblerIn(tipoNodoArbol* subarbol, char* charNumeroWhileLocal) {
+  char* variableResultado = NULL;
+  char* resultadoExpresion = NULL;
+  tipoNodoArbol* subarbolExpresion = obtenerSiguienteExpresionDeLista(subarbol->hijoDerecho);
+
+
+  while(subarbolExpresion != NULL) {
+    cargarSimbolo(subarbol->hijoIzquierdo->valor);
+    resultadoExpresion = procesarExpresion(subarbolExpresion);
+    cargarSimbolo(resultadoExpresion);
+    procesarComparacion();
+    variableResultado = procesarComparador("=");
+    preguntarPorFalso(variableResultado);
+    procesarSaltoCondicionVerdaderaWhile(charNumeroWhileLocal);
+    autoeliminarHijo(subarbolExpresion);
+    subarbolExpresion = obtenerSiguienteExpresionDeLista(subarbol->hijoDerecho);
+  }
+  return NULL;
+}
+
+void procesarSaltoCondicionVerdaderaWhile(char* charNumeroWhileLocal) {
+  sprintf(lineaDeAsssembler, "JE %s\n", crearEtiqueta("WHILE_VERDADERO_", charNumeroWhileLocal));
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+void procesarEtiquetaCondicionVerdaderaWhile(char* charNumeroWhileLocal) {
+  sprintf(lineaDeAsssembler, "%s:\n", crearEtiqueta("WHILE_VERDADERO_", charNumeroWhileLocal));
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+char* procesarExpresion(tipoNodoArbol* arbol) {
+  char* resultadoCodigoIntermedio = NULL;
+
+  if(obtenerOperador(arbol->valor) < 0) {
+    return arbol->valor;
+  } else {
+    return procesarCodigoIntermedio(arbol);
+  }
+}
+
+void autoeliminarHijo(tipoNodoArbol* subarbol) {
+  if(subarbol->padre != NULL) {
+    if(subarbol->padre->hijoIzquierdo == subarbol) {
+      subarbol->padre->hijoIzquierdo = NULL;
+    }
+    else {
+      subarbol->padre->hijoDerecho = NULL;
+    }
+  }
 }

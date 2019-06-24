@@ -18,4 +18,6 @@ const int CONSTANTE_CADENA = 6;*/
 #define CONSTANTE_REAL 5
 #define CONSTANTE_CADENA 6
 
+#define LISTA_EXPRESION 7
+
 #endif
