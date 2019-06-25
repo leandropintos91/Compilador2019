@@ -72,6 +72,7 @@ int numeroIf = 1;
 int numeroCondicion = 1;
 int numeroComparacion = 1;
 int numeroWhile = 1;
+int numeroNegacion = 1;
 char* variableResultadoFibonacci;
 
 void copiarCharEn(char **, char*);
@@ -129,6 +130,7 @@ void cargarSimbolo(char*);
 char* escribirAsemblerIf(tipoNodoArbol*);
 void procesarResultadoCondicion(char*);
 void procesarSaltoFinIf(int);
+void procesarSaltoIncondicionalFinIf(int);
 void procesarFinIf(int);
 void procesarSaltoElse(int);
 void procesarElse(int);
@@ -1222,7 +1224,7 @@ char* escribirAsemblerIf(tipoNodoArbol* subarbol) {
   if(esIfElse(subarbol)) {
     procesarSaltoElse(numeroIfLocal);
     procesarCodigoIntermedio(subarbol->hijoDerecho->hijoIzquierdo);
-    procesarSaltoFinIf(numeroIfLocal);
+    procesarSaltoIncondicionalFinIf(numeroIfLocal);
     procesarElse(numeroIfLocal);
     procesarCodigoIntermedio(subarbol->hijoDerecho->hijoDerecho);
   } else {
@@ -1364,8 +1366,32 @@ char* procesarCondicionCompuesta(char* comparador, char* resultado1, char* resul
   return variableResultado;
 }
 
-void negarCondicion(char* resultado) {
-  //TODO
+void negarCondicion(char* variableResultado) {
+  int numeroNegacionLocal = numeroNegacion;
+  numeroNegacion++;
+  sprintf(lineaDeAsssembler, "MOV eax, %s\n", variableResultado);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "CMP eax, 0\n");
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "JE NEGACION_VERDADERA_%d\n", numeroNegacionLocal);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "MOV %s, 0\n", variableResultado);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "JMP NEGACION_FIN_%d\n", numeroNegacionLocal);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "NEGACION_VERDADERA_%d:\n", numeroNegacionLocal);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "MOV %s, 1\n", variableResultado);
+  agregar(&listaCodigo,lineaDeAsssembler);
+
+  sprintf(lineaDeAsssembler, "NEGACION_FIN_%d:\n", numeroNegacionLocal);
+  agregar(&listaCodigo,lineaDeAsssembler);
 }
 
 char* crearEtiqueta(char* etiqueta, char* numero) {
@@ -1396,6 +1422,14 @@ void procesarSaltoFinIf(int numeroIfLocal) {
   itoa(numeroIfLocal, numeroSalto, 10);
 
   sprintf(lineaDeAsssembler, "JE %s\n", crearEtiqueta("FIN_IF_", numeroSalto));
+  agregar(&listaCodigo,lineaDeAsssembler);
+}
+
+void procesarSaltoIncondicionalFinIf(int numeroIfLocal) {
+  char numeroSalto[10];
+  itoa(numeroIfLocal, numeroSalto, 10);
+
+  sprintf(lineaDeAsssembler, "JMP %s\n", crearEtiqueta("FIN_IF_", numeroSalto));
   agregar(&listaCodigo,lineaDeAsssembler);
 }
 
