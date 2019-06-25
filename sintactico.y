@@ -889,6 +889,7 @@ void escribirAsembler(){
   escribirTablaDeSimbolos();
   escribirLista(listaCodigo,archivoAssembler);
   escribirFinal();
+  printf("Assembler OK.\n");
 	fclose(archivoAssembler); 
 }
 
