@@ -1,42 +1,35 @@
 DEFVAR
-FLOAT: a; b; c
-INT: sarasaentero
+INT: a; b; c
+FLOAT: variableFloat
 STRING : cadenita; cadena1; cadena
 ENDDEF		*/COMENTARIO	*/COMENTARIO ADENTRO DE UN COMENTARIO/* /*
 
-sarasaentero:=30
+variableFloat:=30
 b := b + 2
-b:=-9.9
-b:=-9.
-b:=-.9
-b:=9.999
-b:=9.
-b:=.9
-cadenita := ""
-b:=-9
-cadena1 := "cadena duplicada"
-cadena1 := "cadena duplicada"
+a:=1
+c:=2
+b:=1
 
-WHILE variable IN id1, sarasa, a+b, 5, 7, a*9 
+WHILE b IN a, c, a+c
 DO
     a:=b
     c:=a+b
-    IF (a <= b AND a >= 10 ) THEN
+    IF (a <= c AND b > 0) 
+    THEN
 
         a:= c * FIB(4)
         DISPLAY "texto de prueba"
-        GET cadena1
-        DISPLAY cadenita
     ELSE
       a:= c * 28
     ENDIF
     a:=(9*8)
 ENDWHILE
 
-WHILE (a > b) THEN
+WHILE (a > b) 
+THEN
     c := c + 1
-    IF (a <= b) THEN
-@
+    IF (a <= b) 
+    THEN
         a:= c * 25
     ENDIF
 

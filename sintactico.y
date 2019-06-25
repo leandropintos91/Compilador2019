@@ -113,6 +113,7 @@ char* procesarCodigoIntermedio(tipoNodoArbol*);
 char* escribirAsemblerDeSubarbol(tipoNodoArbol*);
 int obtenerOperador(char*);
 char* escribirAsemblerSuma(tipoNodoArbol*);
+char* escribirAsemblerAlgebraico(tipoNodoArbol*, int);
 void assemblerCargarEntero(char*);
 void assemblerCargarReal(char*);
 char* assemblerGuardarResultado();
@@ -205,7 +206,6 @@ FIBONACCI
 start_programa : programa 
   {
     printf("Compilación OK\n");
-    recorrerArbolPreorderConNivel(punteroPrograma, 0);
     escribirAsembler();
   };
 programa : definicion_variables lista_sentencias 
@@ -628,9 +628,10 @@ char* guardarIDEnTablaDeSimbolos(char* token, int tipo)
 
 char* guardarCadenaEnTablaDeSimbolos(char* token)
 {
-  char* nombreToken = crearNombreID(token);
+  char* nombreToken = (char*)malloc(20);
   char numeroCadena[5];
   itoa(cantidadTokens, numeroCadena,10);
+  strcpy(nombreToken, "_cadena");
   strcat(nombreToken, numeroCadena);
   if(!existeCadenaEnTablaDeSimbolos(token))
   {
@@ -889,7 +890,6 @@ void escribirAsembler(){
   escribirLista(listaCodigo,archivoAssembler);
   escribirFinal();
 	fclose(archivoAssembler); 
-  recorrerLista(listaCodigo);
 }
 
 void escribirCabecera() {
@@ -993,19 +993,19 @@ char* procesarAsemblerDelSubarbolMasALaIzquierda(tipoNodoArbol* subarbol) {
 
 char* escribirAsemblerDeSubarbol(tipoNodoArbol* subarbol) {
   if(obtenerOperador(subarbol->valor) == OPERACION_SUMA) {
-    return escribirAsemblerSuma(subarbol);
+    return escribirAsemblerAlgebraico(subarbol, OPERACION_SUMA);
   }
 
   if(obtenerOperador(subarbol->valor) == OPERACION_RESTA) {
-
+    return escribirAsemblerAlgebraico(subarbol, OPERACION_RESTA);
   }
 
   if(obtenerOperador(subarbol->valor) == OPERACION_MULTIPLICACION) {
-
+    return escribirAsemblerAlgebraico(subarbol, OPERACION_MULTIPLICACION);
   }
 
   if(obtenerOperador(subarbol->valor) == OPERACION_DIVISION) {
-
+    return escribirAsemblerAlgebraico(subarbol, OPERACION_DIVISION);
   }
   if(obtenerOperador(subarbol->valor) == OPERADOR_ASIGNACION) {
     escribirAsemblerAsignacion(subarbol);
@@ -1118,6 +1118,53 @@ char* escribirAsemblerSuma(tipoNodoArbol* subarbol) {
     return assemblerGuardarResultado(VARIABLE_REAL);
 }
 
+char* escribirAsemblerAlgebraico(tipoNodoArbol* subarbol, int operacion) {
+  struct_tabla_de_simbolos * punteroIzquierdo = buscarEnTablaDeSimbolos(subarbol->hijoIzquierdo->valor);
+  struct_tabla_de_simbolos * punteroDerecho = buscarEnTablaDeSimbolos(subarbol->hijoDerecho->valor);
+
+  int tipoIzquierdoEntero = (punteroIzquierdo->tipo == VARIABLE_ENTERO || punteroIzquierdo->tipo == CONSTANTE_ENTERO);
+  int tipoDerechoEntero = punteroDerecho->tipo == VARIABLE_ENTERO || punteroDerecho->tipo == CONSTANTE_ENTERO;
+
+  if(tipoIzquierdoEntero) {
+    assemblerCargarEntero(subarbol->hijoIzquierdo->valor);
+  } else {
+    assemblerCargarReal(subarbol->hijoIzquierdo->valor);
+  }
+
+  if(tipoDerechoEntero) {
+    assemblerCargarEntero(subarbol->hijoDerecho->valor);
+  } else {
+    assemblerCargarReal(subarbol->hijoDerecho->valor);
+  }
+
+  switch(operacion) {
+    case OPERACION_SUMA:
+      sprintf(lineaDeAsssembler, "FADD\n");
+      agregar(&listaCodigo,lineaDeAsssembler);
+      break;
+
+    case OPERACION_RESTA:
+      sprintf(lineaDeAsssembler, "FSUBR\n");
+      agregar(&listaCodigo,lineaDeAsssembler);
+      break;
+
+    case OPERACION_MULTIPLICACION:
+      sprintf(lineaDeAsssembler, "FMUL\n");
+      agregar(&listaCodigo,lineaDeAsssembler);
+      break;
+
+    case OPERACION_DIVISION:
+      sprintf(lineaDeAsssembler, "FDIV\n");
+      agregar(&listaCodigo,lineaDeAsssembler);
+      break;
+  }
+
+  if(tipoIzquierdoEntero && tipoDerechoEntero)
+    return assemblerGuardarResultado(VARIABLE_ENTERO);
+  else
+    return assemblerGuardarResultado(VARIABLE_REAL);
+}
+
 void assemblerCargarEntero(char* valor) {
   sprintf(lineaDeAsssembler, "FILD %s\n", valor);
   agregar(&listaCodigo,lineaDeAsssembler);
@@ -1193,8 +1240,6 @@ char* escribirAsemblerSalida(tipoNodoArbol* subarbol) {
 }
 
 char* escribirAsemblerEntrada(tipoNodoArbol* subarbol) {
-  //DEBUG
-  printf("Escribo subarbol assembler\n");
   int tipo = buscarEnTablaDeSimbolos(subarbol->hijoIzquierdo->valor)->tipo;
   switch(tipo) {
     case VARIABLE_CADENA:

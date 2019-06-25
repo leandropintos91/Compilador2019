@@ -195,8 +195,6 @@ tipoNodoArbol* obtenerSiguienteExpresionDeLista(tipoNodoArbol* arbol) {
     tipoNodoArbol* resultadoIzquierdo = NULL;
     tipoNodoArbol* resultadoDerecho = NULL;
 
-    printf("El valor es: %s\n", arbol->valor);
-
     if(esListaExpresion(arbol->valor)) {
         if(arbol->hijoIzquierdo != NULL) {
             resultadoIzquierdo = obtenerSiguienteExpresionDeLista(arbol->hijoIzquierdo);
